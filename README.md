@@ -70,42 +70,40 @@ Manu figure (3)
 Let us consider a problem of predicting the 4th character given the first 2 characters.  We can design a simple neural network as shown below ![Alt text](images/unRolled_rnn.png?raw=true "Unrolled RNN").
 
 
-  This is basically feed forward network where the weights WI(green arrow), WH(Yello arrrow) are shared between some of the layers. This is an unrolled version of RNN  and this type of RNN are generally refered as many to one RNN, since N inputs (3 character) are used to predict one character. This can be designed in MxNet as follows
+  This is basically feed forward network where the weights WI(green arrow), WH(Yello arrrow) are shared between some of the layers. This is an unrolled version of RNN  and this type of RNN are generally refered as many to one RNN, since N inputs (3 character) are used to predict one character. This model can be designed in MxNet as follows
 
-  ``python
-class GluonRNNModel(gluon.Block):
-    """A model with an encoder, recurrent layer, and a decoder."""
-
-    def __init__(self, mode, vocab_size, num_embed, num_hidden,
-                 num_layers, dropout=0.5, **kwargs):
-        super(GluonRNNModel, self).__init__(**kwargs)
+  ```python
+class UnRolledRNN_Model(Block):
+    def __init__(self,vocab_size, num_embed, num_hidden,**kwargs):
+        super(UnRolledRNN_Model, self).__init__(**kwargs)
+        self.num_embed = num_embed
+        self.vocab_size = vocab_size
+        
+        # use name_scope to give child Blocks appropriate names.
+        # It also allows sharing Parameters between Blocks recursively.
         with self.name_scope():
-            self.drop = nn.Dropout(dropout)
-            self.encoder = nn.Embedding(vocab_size, num_embed,
-                                        weight_initializer = mx.init.Uniform(0.1))
-               
-            if mode == 'lstm':
-                self.rnn = rnn.LSTM(num_hidden, num_layers, dropout=dropout,
-                                    input_size=num_embed)
-            elif mode == 'gru':
-                self.rnn = rnn.GRU(num_hidden, num_layers, dropout=dropout,
-                                   input_size=num_embed)
-            else:
-                self.rnn = rnn.RNN(num_hidden, num_layers, activation='relu', dropout=dropout,
-                                   input_size=num_embed)
-            self.decoder = nn.Dense(vocab_size, in_units = num_hidden)
-            self.num_hidden = num_hidden
-    #define the forward pass of the neural network
-    def forward(self, inputs, hidden):
-        emb = self.drop(self.encoder(inputs))
-        output, hidden = self.rnn(emb, hidden)
-        output = self.drop(output)
-        #print('output forward',output.shape)
-        decoded = self.decoder(output.reshape((-1, self.num_hidden)))
-        return decoded, hidden
-    #Initial state of netork
-    def begin_state(self, *args, **kwargs):
-        return self.rnn.begin_state(*args, **kwargs)
+            self.encoder = nn.Embedding(self.vocab_size, self.num_embed)
+            self.dense1 = nn.Dense(num_hidden,activation='relu',flatten=True)
+            self.dense2 = nn.Dense(num_hidden,activation='relu',flatten=True)
+            self.dense3 = nn.Dense(vocab_size,flatten=True)
+
+    def forward(self, inputs):
+        emd = self.encoder(inputs)
+        #print(emd.shape)
+        #since the input is shape(batch_size,input(3 characters))
+        # we need to extract 0th,1st,2nd character from each batch
+        chararcter1 = emd[:,0,:]
+        chararcter2 = emd[:,1,:]
+        chararcter3 = emd[:,2,:]
+        c1_hidden = self.dense1(chararcter1) # green arrow in diagram for character 1
+        c2_hidden = self.dense1(chararcter2) # green arrow in diagram for character 2
+        c3_hidden = self.dense1(chararcter3) # green arrow in diagram for character 3
+        c1_hidden_2 = self.dense2(c1_hidden)  # yellow arrow in diagram
+        addition_result = F.add(c2_hidden,c1_hidden_2) # Total c1 + c2
+        addition_hidden = self.dense2(addition_result) # the yellow arrow
+        addition_result_2 = F.add(addition_hidden,c3_hidden) # Total c1 + c2
+        final_output = self.dense3(addition_result_2)      
+        return final_output
   ```
 
    There are other types are RNN models inculding the popular sequence to sequence RNN shown below ![Alt text](images/sequene_to_sequence.png?raw=true "Sequence to Sequence model").
