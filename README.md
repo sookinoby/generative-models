@@ -12,10 +12,9 @@ In general, Generative models can be used on any form of data to learn the under
 
 
 
-In this tutorial, we are going to build generative models Apache MXNet gluon API. We'll build up to a generative model that can predict the next character/word and build our own version of [swiftkey](https://blog.swiftkey.com/swiftkey-debuts-worlds-first-smartphone-keyboard-powered-by-neural-networks/. We learn about building blocks of Recurrent Neural Networt, implement a unrolled version of RNN, then move on to implementing LSTM(Long short term memory). We then move on to implement GAN (generative adversial neural network) using MXNet Gluon API.
+In this tutorial, we are going to build generative models Apache MXNet gluon API. We'll build up to a generative model that can predict the next character/word and build our own version of [swiftkey](https://blog.swiftkey.com/swiftkey-debuts-worlds-first-smartphone-keyboard-powered-by-neural-networks/). We learn about building blocks of Recurrent Neural Networt, implement a unrolled version of RNN, then move on to implementing LSTM(Long short term memory). We then move on to implement GAN (generative adversial neural network) using MXNet Gluon API, followed by simple neural network for style transfer.
 
 
-I encourage you to download [the notebook](https://github.com/sookinoby/RNN/blob/master/mxnet_sentiment_analysis.ipynb) where we've created and run all this code, and play with it! Adjust the hyperparameters and experiment with different approaches to neural network architecture.
 
 This notebook expects you to have a basic understanding of recurrent neural network(RNN), activation units, gradient descent, and NumPy. 
 
@@ -46,7 +45,7 @@ If we train a discriminative model, the model will only learn a decision boundar
 In case of generative model, the model will learn the underlying distribution for martians (mean =274, std= 8.71) and human (mean=174, std=7.32). By extending this model we can generate new martians and humans, or a new interbreed species(humars). We can also use this model for classifying martians and humans.
 
 
-# Limitations of feed forward neural network
+#Limitations of feed forward neural network
 
 Although feed forward neural network (including convolution neural network)have shown great accuracy in classifying sentences and text, its cannot store long term dependencies in its memory(hidden state). Convolution neural network can only remember spatial information for a small local neighbhour (siz of convolution kernels).  Let's consider a toy example which help us to understand long term dependencies.
 
@@ -60,20 +59,21 @@ RNN, Here I come.
  </html>"
  ```
 
-Suppose we need to train a model to generate prediction for auto complete feature for our latest super awesome text editor using deep learnig model. The model should remember long term dependiences like start tag <html> should be closed in the end. A convolution neural network / feed forward neural network does not have provision to remember long term context/information. It cannot model input that is form of sequence (i.e. ordering a follow b) or time dependent. A RNN can remember the context by passing along the hidden state. 
+Suppose we need to train a model to generate prediction for auto complete feature for our latest super awesome text editor using deep learnig model. The model should remember long term dependiences like start tag <html> should be closed in the end. A convolution neural network does not have provision to remember long term context/information. A RNN can remember the context by passing along the hidden state.
 
 
-# Inutiton behind simple RNN.
+# Inutiton behind RNN.
 
 Manu figure (3)
 
 Let us consider a problem of predicting the 4th character given the first 2 characters.  We can design a simple neural network as shown below ![Alt text](images/unRolled_rnn.png?raw=true "Unrolled RNN").
 
 
-  This is basically feed forward network where the weights WI(green arrow), WH(Yello arrrow) are shared between some of the layers. This is an unrolled version of a simple RNN  and this type of RNN are generally refered as many to one RNN, since N inputs (3 character) are used to predict one character. This model can be designed in MxNet as follows
+  This is basically feed forward network where the weights WI(green arrow), WH(Yello arrrow) are shared between some of the layers. This is an unrolled version of RNN  and this type of RNN are generally refered as many to one RNN, since N inputs (3 character) are used to predict one character. This can be designed in MxNet as follows
 
-  ```python
+  ``python
 class UnRolledRNN_Model(Block):
+  # This is the initialisation of UnRolledRNN
     def __init__(self,vocab_size, num_embed, num_hidden,**kwargs):
         super(UnRolledRNN_Model, self).__init__(**kwargs)
         self.num_embed = num_embed
@@ -87,6 +87,7 @@ class UnRolledRNN_Model(Block):
             self.dense2 = nn.Dense(num_hidden,activation='relu',flatten=True)
             self.dense3 = nn.Dense(vocab_size,flatten=True)
 
+    # This is the forward pass of neural network
     def forward(self, inputs):
         emd = self.encoder(inputs)
         #print(emd.shape)
@@ -95,34 +96,59 @@ class UnRolledRNN_Model(Block):
         chararcter1 = emd[:,0,:]
         chararcter2 = emd[:,1,:]
         chararcter3 = emd[:,2,:]
-        c1_hidden = self.dense1(chararcter1) # green arrow in diagram for character 1
-        c2_hidden = self.dense1(chararcter2) # green arrow in diagram for character 2
-        c3_hidden = self.dense1(chararcter3) # green arrow in diagram for character 3
-        c1_hidden_2 = self.dense2(c1_hidden)  # yellow arrow in diagram
-        addition_result = F.add(c2_hidden,c1_hidden_2) # Total c1 + c2
-        addition_hidden = self.dense2(addition_result) # the yellow arrow
-        addition_result_2 = F.add(addition_hidden,c3_hidden) # Total c1 + c2
-        final_output = self.dense3(addition_result_2)      
+        c1_hidden = self.dense1(chararcter1) # green arrow in diagram for character 1 (WI)
+        c2_hidden = self.dense1(chararcter2) # green arrow in diagram for character 2 (WI)
+        c3_hidden = self.dense1(chararcter3) # green arrow in diagram for character 3 (WI)
+        c1_hidden_2 = self.dense2(c1_hidden)  # yellow arrow in diagram (WH)
+        addition_result = F.add(c2_hidden,c1_hidden_2) # Total c1 + c2 
+        addition_hidden = self.dense2(addition_result) # the yellow arrow (WH)
+        addition_result_2 = F.add(addition_hidden,c3_hidden) # Total c2 + c3 
+        final_output = self.dense3(addition_result_2)   # The red arrow in diagram (WO)  
         return final_output
   ```
+   There are other types are RNN models inculding the popular sequence to sequence RNN shown below ![Alt text](images/sequene_to_sequence.png?raw=true "Sequence to Sequence model").
 
-The above RNN can be extended for N inputs too. There are other types are RNN models inculding the popular sequence to sequence RNN shown below ![Alt text](images/sequene_to_sequence.png?raw=true "Sequence to Sequence model").
+   Here N inputs (3 characters)  are mapped onto 3 outputs, this helps model to train faster as we loss at each time instant, so provides better feedback (back propagation) during model training. This model can be rolled back in and succinctly repsesented as below (images/RNN.png?raw=true "RNN").
 
-Here N inputs (3 characters)  are mapped onto 3 outputs, this helps model to train faster as we loss at each time instant, so provides better feedback (back propagation) during model training. This model can be rolled back in and succinctly repsesented as below 
-![Alt text](images/RNN.png?raw=true "RNN").
+## Long short term memory (LSTM)
 
-The are some limitation associated with basic RNN. For example, let us take a sentence like which contains 1000 words
-" I was born in france during world war.... So I can speak french". An simple RNN may not be able to reasons "being born in france" to "I can speak french" because there can be big distance between those two phrases. RNN doesnt provide provision to forget irrelvant context inbetween the phrases. 
-Also training RNN over a long sequence can cause gradient in back propogation to vanish (when gradient is less one) or explode (gradient is bigger than 1) since back propogration basically mutiples the gradients along the graph in revese direction. Long short term memory (LSTM(, a complex RNN unit was introduced to address the problem of training RNN over long sequence
+Long short term memory are type of RNN neural network which has two parameters, namely the hidden state and memory that are passed along the time step. Each unit of LSTM has small neural network that decides that amount of information that it needs to remember (memory) from previous time step. A LSTM neural network 
 
-## LSTM
-Long short term memory are type of RNN neural network which has two parameters, namely the hidden state and memory that are passed along the time step. Each unit of LSTM has small neural network that decides that amount of information that it needs to remember (memory) from previous time step. A LSTM neural network in abstract can be represented as below . A beautifully inllusrated in-depth description of LSTM can be found here [here ](https://medium.com/mlreview/understanding-lstm-and-its-diagrams-37e2f46f1714)
- 
- ![Alt text](images/RNN.png?raw=true "RNN")
 
-## Installing MxNet with Gluon API.
+## Preparing your environment
+If you're working in the AWS Cloud, you can save yourself the installation management by using a [Amazon Machine Image](https://aws.amazon.com/marketplace/pp/B01M0AXXQB#support), pre-configured for deep learning. This will enable you to skip steps 1-5 below.  
 
-[Gluon API](https://github.com/gluon-api/gluon-api) is Deep Learning API specifcation designed my microsoft and Amazon for developing deep learnig models independent of the underlying deep learning framework. Currently MxNet, PyTorch and Chainer support Gluon interfaces. Gluon MxNet is currently an experimental feature in MxNet and will be the future of MxNet.
+Note that if you are using a Conda environment, remember to install pip inside conda by typing 'conda install pip' after you activate an environment. This step will save you a lot of problems down the road.
+
+Here's how to get set up: 
+
+1. First, get [Anaconda](https://www.continuum.io/downloads), a package manager. It will help you to install dependent Python libraries with ease.
+2. Next, install [scikit learn](http://scikit-learn.org/stable/install.html), a general-purpose scientific computing library. We'll use this to pre-process our data. You can install it with 'conda install scikit-learn'.
+3. Then grab the Jupyter Notebook, with 'conda install jupyter notebook'.
+4. And then, get [MXNet](https://github.com/apache/incubator-mxnet/releases), an open source deep learning library. The python notebook was tested on  0.12.0, you can with pip install mxnet==0.12.0
+
+
+Here are the commands you need to type inside the anaconda environment (after its activation ):
+1. conda install pip 
+2. pip install opencv-python
+3. conda install scikit-learn
+4. conda install jupyter notebook
+5. pip install mxnet==0.12.0
+
+
+# Generative Models for characters
+
+The notebook for this part of the tutorial can be found here 
+
+I encourage you to download [the notebook](https://github.com/sookinoby/generative-models/blob/master/Test-rnn.ipynb) where we've created and run all this code, and play with it! Adjust the hyperparameters and experiment with different approaches to neural network architecture.
+
+##
+
+In order to learn about any deep neural network, we need data. For this notebook, we'll use a text literary work of [Friedrich Nietzsche](https://en.wikipedia.org/wiki/Friedrich_Nietzsche). You can download the data set [here](https://s3.amazonaws.com/text-datasets/nietzsche.txt). You are free to use any other dataset or try something from [here](https://cs.stanford.edu/people/karpathy/char-rnn/)
+
+The data set nietzsche.txt consists of 600901 characters, with 86 unique character. 
+
+
 
 
 ## Sentiment Analysis
