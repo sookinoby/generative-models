@@ -71,7 +71,7 @@ Let us consider a problem of predicting the 4th character given the first 2 char
 
   This is basically feed forward network where the weights WI(green arrow), WH(Yello arrrow) are shared between some of the layers. This is an unrolled version of RNN  and this type of RNN are generally refered as many to one RNN, since N inputs (3 character) are used to predict one character. This can be designed in MxNet as follows
 
-  ``python
+```python
 class UnRolledRNN_Model(Block):
   # This is the initialisation of UnRolledRNN
     def __init__(self,vocab_size, num_embed, num_hidden,**kwargs):
@@ -106,9 +106,10 @@ class UnRolledRNN_Model(Block):
         final_output = self.dense3(addition_result_2)   # The red arrow in diagram (WO)  
         return final_output
   ```
-   There are other types are RNN models inculding the popular sequence to sequence RNN shown below ![Alt text](images/sequene_to_sequence.png?raw=true "Sequence to Sequence model").
 
-   Here N inputs (3 characters)  are mapped onto 3 outputs, this helps model to train faster as we loss at each time instant, so provides better feedback (back propagation) during model training. This model can be rolled back in and succinctly repsesented as below (images/RNN.png?raw=true "RNN").
+There are other types are RNN models inculding the popular sequence to sequence RNN shown below ![Alt text](images/sequene_to_sequence.png?raw=true "Sequence to Sequence model").
+
+Here N inputs (3 characters)  are mapped onto 3 outputs, this helps model to train faster as we loss at each time instant, so provides better feedback (back propagation) during model training. This model can be rolled back in and succinctly repsesented as below (images/RNN.png?raw=true "RNN").
 
 ## Long short term memory (LSTM)
 
