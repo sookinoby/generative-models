@@ -108,7 +108,7 @@ class UnRolledRNN_Model(Block):
 
    There are other types are RNN models inculding the popular sequence to sequence RNN shown below ![Alt text](images/sequene_to_sequence.png?raw=true "Sequence to Sequence model").
 
-   Here N inputs (3 characters)  are mapped onto 3 outputs, this helps model to train faster as we loss at each time instant, so provides better feedback (back propagation) during model training. This model can be rolled back in and succinctly repsesented as below (images/RNN.png?raw=true "RNN").
+   Here N inputs (3 characters)  are mapped onto 3 outputs, this helps model to train faster as we loss at each time instant, so provides better feedback (back propagation) during model training. This model can be rolled back in and succinctly repsesented as below ![Alt text](images/RNN.png?raw=true "RNN").
 
 # LSTM
 
