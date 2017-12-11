@@ -282,7 +282,11 @@ def trainGluonRNN(epochs,train_data,seq=seq_length):
         model.save_params(rnn_save)
 ```
 
-A each epoch's begining, we initialise the initial input of the 
+A each epoch's begining, we initialise the hidden units to zero state. During training of each batch we detach hidden unit from computational graph as we dont want to back propogate gradient beyond the sequence lenght. We also scale the gradient by multiplying with sequence lenght and batch size
+
+### Text generation.
+
+We can generate random text from the trained RNN model. The following python code generates random text 
 
 
 ## Generative adversial network (GAN)
