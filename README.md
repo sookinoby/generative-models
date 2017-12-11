@@ -156,7 +156,7 @@ I encourage you to download [the notebook](https://github.com/sookinoby/generati
 
 ## Preparing the DataSet
 
-In order to learn about any deep neural network, we need data. For this notebook, we'll use a text literary work of [Friedrich Nietzsche](https://en.wikipedia.org/wiki/Friedrich_Nietzsche). You can download the data set [here](https://s3.amazonaws.com/text-datasets/nietzsche.txt). You are free to use any other dataset or try something from [here](https://cs.stanford.edu/people/karpathy/char-rnn/)
+In order to learn about any deep neural network, we need data. For this notebook, we'll use a text literary work of [Friedrich Nietzsche](https://en.wikipedia.org/wiki/Friedrich_Nietzsche). You can download the data set [here](https://s3.amazonaws.com/text-datasets/nietzsche.txt). You are free to use any other dataset including your own chat history or try something from [here](https://cs.stanford.edu/people/karpathy/char-rnn/)
 
 The data set nietzsche.txt consists of 600901 characters, with 86 unique character. We need to encode the complete text as sequence of numbers. This can be done as follows
 
@@ -251,6 +251,215 @@ class GluonRNNModel(gluon.Block):
         return self.rnn.begin_state(*args, **kwargs)
 ```
 The constructor of class creates few neural units that will be used in our forward pass. The forward pass is the method that will be called during our training to generate the loss.
-Then We first create an [embedding layer](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.nn.Embedding) for the input character. You can look at the [previous blog](https://www.oreilly.com/ideas/sentiment-analysis-with-apache-mxnet) post for more details on embedding, followed by a RNN (GRU / LSTM). The RNN unit returns an output as well as hidden state. The output produced by the RNN is passed to a decoder (dense unit) which predicts the next character in the neural network.
+Then We first create an [embedding layer](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.nn.Embedding) for the input character. You can look at the [previous blog](https://www.oreilly.com/ideas/sentiment-analysis-with-apache-mxnet) post for more details on embedding, followed by a RNN (GRU / LSTM). The RNN unit returns an output as well as hidden state. The output produced by the RNN is passed to a decoder (dense unit) which predicts the next character in the neural network. We also have a begin state function that initialise the initial hidden state of the model.
 
 ### Training the neural network
+
+After defining the network we can train the neural network as follows
+
+```python 
+def trainGluonRNN(epochs,train_data,seq=seq_length):
+    best_val = float("Inf")
+    for epoch in range(epochs):
+        total_L = 0.0
+        start_time = time.time()
+        hidden = model.begin_state(func = mx.nd.zeros, batch_size = batch_size, ctx = context)
+        for ibatch, i in enumerate(range(0, train_data.shape[0] - 1, seq_length)):
+            data, target = get_batch(train_data, i,seq)
+            hidden = detach(hidden)
+            with autograd.record():
+                output, hidden = model(data, hidden)
+                L = loss(output, target)
+                L.backward()
+
+            grads = [i.grad(context) for i in model.collect_params().values()]
+            # Here gradient is for the whole batch.
+            # So we multiply max_norm by batch_size and bptt size to balance it.
+            gluon.utils.clip_global_norm(grads, clip * seq_length * batch_size)
+
+            trainer.step(batch_size)
+            total_L += mx.nd.sum(L).asscalar()
+        model.save_params(rnn_save)
+```
+
+A each epoch's begining, we initialise the initial input of the 
+
+
+## Generative adversial network (GAN)
+
+Generative adversial network is neural network model based on game theory zero-sum game. It typically consists of two different neural network namely Discriminator and Generator, where each network tries to outwin the other. Let us consider a inutitive example to understand GAN network. 
+![Alt text](images/GAN_SAMPLE.png?raw=true "Generative Adversial Network")
+
+Suppose there is bank (discriminator) that decides whether a give currency is real or fake. A counterfeit team which wants to produce fake currency can learn all the details of currency by looking at few real curreny notes. Then they can produce a similar fake currency note and give it to the bank. The bank runs its own secret algorithm to determine whether the give currency note is real or fake. For a given fake currency note given by counterfeit, the bank can reject it by saying it as fake and gived a partial reasoning about it. The counterfeit team can take the 'reason / loss' and can try to improve their model. After mutliple iterations, the bank cannot determine the difference between real and fake currency. This is basic idea behind GAN . Let start implementing a simple GAN network.
+
+I encourage you to download [the notebook](https://github.com/sookinoby/generative-models/blob/master/GAN.ipynb) where we've created and run all this code, and play with it! Adjust the hyperparameters and experiment with different approaches to neural network architecture.
+
+### Preparing the DataSet
+
+We use a library called [brine](https://docs.brine.io/getting_started.html) to download our dataset. Brine has various dataset and we can choose the dataset to download. So to install and download dataset do the following
+
+1. pip install brine-io
+2. brine install jayleicn/anime-faces
+
+Anime-faces contains over 100,000 anime images collected from internet 
+
+Once the dataset is downloaded , you can load the dataset as follow
+
+```python
+# brine for loading anime-faces dataset
+import brine
+anime_train = brine.load_dataset('jayleicn/anime-faces')
+```
+
+We also need to normalise the pixel value of each image to [-1 to 1] and also channel the ordering of image from  (width X height X channels) to (channels X width X height ) since MxNet expects this format.
+
+```python
+def transform(data, target_wd, target_ht):
+    # resize to target_wd * target_ht
+    data = mx.image.imresize(data, target_wd, target_ht)
+    # transpose from (target_wd, target_ht, 3) 
+    # to (3, target_wd, target_ht)
+    data = nd.transpose(data, (2,0,1))
+    # normalize to [-1, 1]
+    data = data.astype(np.float32)/127.5 - 1
+    return data.reshape((1,) + data.shape)
+
+# Read images, call the transform function, attach it to list
+def getImageList(base_path,training_folder):
+    img_list = []
+    for train in training_folder:
+        fname = base_path + train.image
+        img_arr = mx.image.imread(fname)
+        img_arr = transform(img_arr, target_wd, target_ht)
+        img_list.append(img_arr)
+    return img_list
+
+base_path = 'brine_datasets/jayleicn/anime-faces/images/'
+img_list = getImageList('brine_datasets/jayleicn/anime-faces/images/',training_fold)
+```
+
+
+### Designing the network
+
+We need to design two seperate networks i.e. discriminator network and a generator network. Generator takes in a shape of (batchsize X N ) dimension random vector and converts it image of shape (batchsize X channels X width X height). It use trasponse convolutions to upscale the one dimension input vector into a image. This is very similar to a decoder unit in an [autoencoder](https://en.wikipedia.org/wiki/Autoencoder) trying to map a lower dimension vector into higher dimensional vector representation. Below is the snippet of generator network
+
+```python  
+with netG.name_scope():
+    # input is Z, going into a convolution
+    netG.add(nn.Conv2DTranspose(ngf * 8, 4, 1, 0))
+    netG.add(nn.BatchNorm())
+    netG.add(nn.Activation('relu'))
+    # state size. (ngf*8) x 4 x 4
+    netG.add(nn.Conv2DTranspose(ngf * 4, 4, 2, 1))
+    netG.add(nn.BatchNorm())
+    netG.add(nn.Activation('relu'))
+    # state size. (ngf*8) x 8 x 8
+    netG.add(nn.Conv2DTranspose(ngf * 2, 4, 2, 1))
+    netG.add(nn.BatchNorm())
+    netG.add(nn.Activation('relu'))
+    # state size. (ngf*8) x 16 x 16
+    netG.add(nn.Conv2DTranspose(ngf, 4, 2, 1))
+    netG.add(nn.BatchNorm())
+    netG.add(nn.Activation('relu'))
+    # state size. (ngf*8) x 32 x 32
+    netG.add(nn.Conv2DTranspose(nc, 4, 2, 1))
+    netG.add(nn.Activation('tanh')) # use tanh , we need an output that is between -1 to 1, not 0 to 1 
+    # Rememeber the input image is normalised between -1 to 1, so should be the output
+    # state size. (nc) x 64 x 64
+```
+
+Discriminator are basically a binary image classification network that maps the image of shape (batchsize X channels X width x height) into a lower dimension vector of shape (batchsize X 1). This is similar to a encoder that converts a higher dimension image representation into lower one. Below is the snippet of generator network
+
+```python
+with netD.name_scope():
+    # input is (nc) x 64 x 64
+    netD.add(nn.Conv2D(ndf, 4, 2, 1))
+    netD.add(nn.LeakyReLU(0.2))
+    # state size. (ndf) x 32 x 32
+    netD.add(nn.Conv2D(ndf * 2, 4, 2, 1))
+    netD.add(nn.BatchNorm())
+    netD.add(nn.LeakyReLU(0.2))
+    # state size. (ndf) x 16 x 16
+    netD.add(nn.Conv2D(ndf * 4, 4, 2, 1))
+    netD.add(nn.BatchNorm())
+    netD.add(nn.LeakyReLU(0.2))
+    # state size. (ndf) x 8 x 8
+    netD.add(nn.Conv2D(ndf * 8, 4, 2, 1))
+    netD.add(nn.BatchNorm())
+    netD.add(nn.LeakyReLU(0.2))
+    # state size. (ndf) x 4 x 4
+    netD.add(nn.Conv2D(1, 4, 1, 0))
+```
+### Training the GAN network
+
+The training of GAN network is not straight forward but it is simple enough. Below the illustration of training process.  ![Alt text](images/GAN_Model.png?raw=true "GAN training").  The real images are given a label one and the fake images are given a label zero
+
+```python
+#real label is the labels of real image
+real_label = nd.ones((batch_size,), ctx=ctx)
+#fake labels is label associated with fake image
+fake_label = nd.zeros((batch_size,),ctx=ctx)
+```
+#### Training the discriminator
+
+ A real image is also passed to discriminator to determine if it is real or fake and loss errD_real.
+
+ ```python
+# train with real image
+output = netD(data).reshape((-1, 1))
+#The loss is a real valued number
+errD_real = loss(output, real_label)
+``` 
+
+The random noise z is passed to generator network to generate a random image.This image is then passed to the discriminator to classify if it as real (1) or fake(0) producing a loss, errD_fake.
+ 
+ ```python            
+#train with fake image, see the what the discriminator predicts
+#creates fake imge
+fake = netG(latent_z)
+# pass it to discriminator
+output = netD(fake.detach()).reshape((-1, 1))
+errD_fake = loss(output, fake_label)
+ ```
+
+The total error is backprogapagated to tune the weights of discrimnator.
+
+ ```python
+#compute the total error for fake image and the real image
+errD = errD_real + errD_fake
+#improve the discriminator skill by back propagating the error
+errD.backward()
+```
+
+#### Training the generator
+
+The same random noise to generate a fake image. Then we pass the fake image to the discriminator network to obtain the classification output, and loss is calculated. The loss is then used fine tune the network
+
+```python
+fake = netG(latent_z)
+output = netD(fake).reshape((-1, 1))
+errG = loss(output, real_label)
+errG.backward()
+```
+
+### Generating new fake images
+
+We can use the generator network to create new fake images by provding 100 dimension random input to the network.
+
+ ![Alt text](images/GAN_image.png?raw=true "GAN generated images").
+```
+#Lets generate some random images
+num_image = 8
+for i in range(num_image):
+    # randome input for the generating images
+    latent_z = mx.nd.random_normal(0, 1, shape=(1, latent_z_size, 1, 1), ctx=ctx)
+    img = netG(latent_z)
+    plt.subplot(2,4,i+1)
+    visualize(img[0])
+plt.show()
+```
+
+
+## Conculsion
+Generative models opens new opportunities for deep learning.  We explored some the popular generative models for text as well as image. We learnt basics of RNN and how RNN can be constructed using feed forward neural network. We also used RNN to generate text similar to Friedrich Nietzsche using LSTM.
+Then we learnt of GAN models and generated images similar to that of input data (Anime Characters). 
