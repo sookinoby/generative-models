@@ -207,6 +207,50 @@ def get_batch(source,label_data, i,batch_size=32):
 
 ### preparing dataset for gluon RNN
 
-This is very similar to preparing dataset for un Rolled RNN expect for ordering. The dataset should be ordered in the shape (number of example X batch_size). For example let consider sample dataset set in the format . Need to continue
+This is very similar to preparing dataset for un Rolled RNN expect for ordering. The dataset should be ordered in the shape (number of example X batch_size). For example let consider sample dataset set in the format below.
+![Alt text](images/batch_reshape.png?raw=true "batch reshape")
+The input sequence is converted to batch of size 3, and then into 2 separate input sequence of length. By performing such a transformation, it is very easy to generate arbitary length input sequence for trainign.
 
+### Designing RNN in Gluon
 
+We define a class which allows us to create two type of RNN namely GRU (Gated Recurrent Unit) and LSTM. Below the python snippet
+
+```python
+# Class to create model objects.
+class GluonRNNModel(gluon.Block):
+    """A model with an encoder, recurrent layer, and a decoder."""
+
+    def __init__(self, mode, vocab_size, num_embed, num_hidden,
+                 num_layers, dropout=0.5, **kwargs):
+        super(GluonRNNModel, self).__init__(**kwargs)
+        with self.name_scope():
+            self.drop = nn.Dropout(dropout)
+            self.encoder = nn.Embedding(vocab_size, num_embed,
+                                        weight_initializer = mx.init.Uniform(0.1))
+               
+            if mode == 'lstm':
+                self.rnn = rnn.LSTM(num_hidden, num_layers, dropout=dropout,
+                                    input_size=num_embed)
+            elif mode == 'gru':
+                self.rnn = rnn.GRU(num_hidden, num_layers, dropout=dropout,
+                                   input_size=num_embed)
+            else:
+                self.rnn = rnn.RNN(num_hidden, num_layers, activation='relu', dropout=dropout,
+                                   input_size=num_embed)
+            self.decoder = nn.Dense(vocab_size, in_units = num_hidden)
+            self.num_hidden = num_hidden
+    #define the forward pass of the neural network
+    def forward(self, inputs, hidden):
+        emb = self.drop(self.encoder(inputs))
+        output, hidden = self.rnn(emb, hidden)
+        output = self.drop(output)
+        decoded = self.decoder(output.reshape((-1, self.num_hidden)))
+        return decoded, hidden
+    #Initial state of netork
+    def begin_state(self, *args, **kwargs):
+        return self.rnn.begin_state(*args, **kwargs)
+```
+The constructor of class creates few neural units that will be used in our forward pass. The forward pass is the method that will be called during our training to generate the loss.
+Then We first create an [embedding layer](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.nn.Embedding) for the input character. You can look at the [previous blog](https://www.oreilly.com/ideas/sentiment-analysis-with-apache-mxnet) post for more details on embedding, followed by a RNN (GRU / LSTM). The RNN unit returns an output as well as hidden state. The output produced by the RNN is passed to a decoder (dense unit) which predicts the next character in the neural network.
+
+### Training the neural network
