@@ -286,7 +286,32 @@ A each epoch's begining, we initialise the hidden units to zero state. During tr
 
 ### Text generation.
 
-We can generate random text from the trained RNN model. The following python code generates random text 
+After training for 200 epochs, We can generate random text. The following python code generates random text from the learnt model
+
+```python
+# a nietzsche like text generator
+import sys
+def generate_random_text(model,input_string,seq_length,batch_size,sentence_length):
+    count = 0
+    new_string = ''
+    cp_input_string = input_string
+    while count < sentence_length:
+        idx = [char_indices[c] for c in input_string]
+        if(len(input_string) != seq_length):
+            print(len(input_string))
+            raise ValueError('there was a error in the input ')
+        hidden = model.begin_state(func = mx.nd.zeros, batch_size = batch_size, ctx=context)
+        sample_input = mx.nd.array(np.array([idx[0:seq_length]]).T
+                                ,ctx=context)
+        output,hidden = model(sample_input,hidden)
+        index = mx.nd.argmax(output, axis=1)
+        index = index.asnumpy()
+        count = count + 1
+        new_string = new_string + indices_char[index[-1]]
+        input_string = input_string[1:] + indices_char[index[-1]]
+    print(cp_input_string + new_string)
+
+```
 
 
 ## Generative adversial network (GAN)
