@@ -115,7 +115,7 @@ The are some limitations with basic RNN. For example, let us take a document tha
 RNN doesn’t provide the capability to forget irrelevant context in between the phrases. RNN gives more importance to the previous hidden state because it cannot give preference to the arbitrary (t-k) hidden state, where t is the current time step and k is the number greater than 0.  Training an RNN on a long sequence of words can cause gradient in backpropagation to vanish (when gradient is less than one) or to explode (when gradient is larger than 1), as [back propagation](http://neuralnetworksanddeeplearning.com/chap2.html) basically multiplies the gradients along the computational graph in reverse direction. A detailed explanation of problems with RNN is given [here](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.421.8930&rep=rep1&type=pdf).  
 ## Long short term memory (LSTM)
 In order to address the problems with basic RNN German researchers, Sepp Hochreiter and Juergen Schmidhuber proposed [Long short term memory](http://www.bioinf.jku.at/publications/older/2604.pdf) (LSTM, a complex RNN unit) as a solution to the vanishing / exploding gradient problem.  A beautifully illustrated simpler version of LSTM can be found [here](https://medium.com/mlreview/understanding-lstm-and-its-diagrams-37e2f46f1714). We can see that each unit of LSTM has a small neural network that decides the amount of information it needs to remember (memory) from the previous time step. 
-The diagram below illustrates the LSTM model: 
+The diagram below illustrates the LSTM model:  <br />
  ![Alt text](images/lstm.png?raw=true "RNN") <br />
 
 # Preparing your environment
@@ -127,7 +127,7 @@ Note that if you are using a Conda environment, remember to install pip inside c
 Here's how to get set up: 
 
 1. Install [Anaconda](https://www.continuum.io/downloads), a package manager. It is easier to install Python libraries using Anaconda.
-2. Install [scikit learn](http://scikit-learn.org/stable/install.html), a general-purpose scientific computing library. We'll use this to pre-process our data. You can instal it with 'conda install scikit-learn'.
+2. Install [scikit learn](http://scikit-learn.org/stable/install.html), a general-purpose scientific computing library. We'll use this to pre-process our data. You can install it with 'conda install scikit-learn'.
 3. Then grab the Jupyter Notebook, with 'conda install jupyter notebook'.
 4. And then, get [MXNet](https://github.com/apache/incubator-mxnet/releases), an open source deep learning library. The python notebook was tested on  0.12.0 version of MxNet, and  you can install using pip as follows: pip install mxnet==0.12.0
 
@@ -240,7 +240,7 @@ class GluonRNNModel(gluon.Block):
         return self.rnn.begin_state(*args, **kwargs)
 ```
 The constructor of class creates few neural units that will be used in our forward pass. The forward pass is the method that will be called during our training to generate the  loss associated with the training data.
-The forward pass function in the GluonRNNModel creates an [embedding layer](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.nn.Embedding) for the input character. You can look at our[previous blog post](https://www.oreilly.com/ideas/sentiment-analysis-with-apache-mxnet) for more details on embedding. The output of the embedding layer is  provided as aninput to the RNN ([GRU](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.rnn.GRU) / [LSTM](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.rnn.LSTM) ) layer. The RNN unit returns an output as well as hidden state. The output produced by the RNN is passed to a decoder (dense unit) which predicts the next character in the neural network and also generate the loss. We also have a “begin state” function that initializes the initial hidden state of the model.
+The forward pass function in the GluonRNNModel creates an [embedding layer](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.nn.Embedding) for the input character. You can look at our [previous blog post](https://www.oreilly.com/ideas/sentiment-analysis-with-apache-mxnet) for more details on embedding. The output of the embedding layer is  provided as aninput to the RNN ([GRU](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.rnn.GRU) / [LSTM](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.rnn.LSTM) ) layer. The RNN unit returns an output as well as hidden state. The output produced by the RNN is passed to a decoder (dense unit) which predicts the next character in the neural network and also generate the loss. We also have a “begin state” function that initializes the initial hidden state of the model.
 
 ## Training the neural network
 
