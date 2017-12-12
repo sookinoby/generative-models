@@ -160,7 +160,7 @@ idx = [char_indices[c] for c in text]
 ```
 
 ### preparing dataset for Un-rolled RNN
- We need to convert the dataset in such a way that the input will be the first three characters , and the output will be the 4th character.. Let say we have a sentence ‘I_love_mxnet’, this will be converted into the following input ![Alt text](images/uroll_input.png?raw=true "unrolled input").
+ We need to convert the dataset in such a way that the input will be the first three characters , and the output will be the 4th character.. Let say we have a sentence ‘I_love_mxnet’, this will be converted into the following input ![Alt text](images/unroll_input.png?raw=true "unrolled input").
 
 
  ```python
