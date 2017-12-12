@@ -3,9 +3,9 @@ In our previous notebooks, we used a deep learning technique called Convolution 
 Deep learning models, in recent times have been used to generate data based on the given input signal – these are called Generative Models.  A Generative Model tries to understand the underlying distribution, it can also generate new data or classify a given input data.  We have explained the difference between Generative and Discriminative model in the “Generative Models” section below. 
 Generative models are powerful and provide insights about the underlying phenomenon that generates the data, therefore, they can generate data similar to the input data. Generative Models can be used to:
 
-a. Predict  the probability of a word or character given the previous word or character.
-b. Produce a new song or combine two genre of songs to create an entirely different song, and  synthesize new images from existing images are some examples of generative models. 
-c.Up [sample images](https://arxiv.org/pdf/1703.04244.pdf) and much more.
+1. Predict  the probability of a word or character given the previous word or character.
+2. Produce a new song or combine two genre of songs to create an entirely different song, and  synthesize new images from existing images are some examples of generative models. 
+3.Up [sample images](https://arxiv.org/pdf/1703.04244.pdf) and much more.
 
 
 In general, Generative Models can be used on any form of data to learn the underlying distribution and produce new data / augment existing data.
@@ -22,8 +22,8 @@ By the end of the notebook, you will be able to:
 4. Install MXNet with Gluon API.
 5. Prepare datasets to train the Neural Network.
 6. Implement a basic RNN using Feed Forward Neural Network
-6. Implement a Generative Model to auto generate text using Gluon API
-7. Implement a Generative Adaptive Neural Network
+7. Implement a Generative Model to auto generate text using Gluon API
+8. Implement a Generative Adaptive Neural Network
 
 # Generative models- Discriminative models: Martians vs Humans
 Let us take a simple example to understand our dataset better. Let’s say that we have to classify Martians and Humans based on their heights (in centimeters). Below is the sample data set
