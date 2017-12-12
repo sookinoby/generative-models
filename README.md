@@ -95,9 +95,9 @@ class UnRolledRNN_Model(Block):
 Basically this neural network has 3 embedding layer (emb) for each character, followed by 3 dense layer -dense1 (shared weight) for inputs, followed by 2 dense layer - dense2 and 1 dense layer (dense3) that produces the output. We also do some mxnet array addition to combine inputs.
 
 Similar to N to 1 RNN, There are other types of RNN models, including the popular sequence to sequence RNN: 
-![Alt text](images/sequene_to_sequence.png?raw=true "Sequence to Sequence model").
+![Alt text](images/loss.png?raw=true"Sequence to Sequence model").
 
-Here N inputs (3 characters) are mapped onto 3 outputs, this helps the model to train faster as we loss (difference in the prediction and the actual output) at each time instant![Alt text](images/loss.png?raw=true "Loss at each instant"). Instead of one loss at the end,  can see loss1, loss2, …. , so each loss can be used to fine tune the network. We use [binary cross entropy loss](https://mxnet.incubator.apache.org/api/python/gluon/loss.html#mxnet.gluon.loss.SigmoidBinaryCrossEntropyLoss) function in our model.
+Here N inputs (3 characters) are mapped onto 3 outputs, this helps the model to train faster as we loss (difference in the prediction and the actual output) at each time instant. Instead of one loss at the end,  can see loss1, loss2, …. , so each loss can be used to fine tune the network. We use [binary cross entropy loss](https://mxnet.incubator.apache.org/api/python/gluon/loss.html#mxnet.gluon.loss.SigmoidBinaryCrossEntropyLoss) function in our model.
 
 So that we get a better feedback (backpropagation) when training our model. 
 This model can be folded back and succinctly represented like this: 
@@ -108,7 +108,6 @@ The above representation also makes the math behind the model easy to understand
 ```python
 hidden_state_at_t = (WI x input + WH x previous_hidden_state)
 ```
-
 
 The are some limitations with basic RNN. For example, let us take a document that has 1000 words " I was born in france during world war.... So I can speak french". A simple RNN may not be able to understand the context between "being born in france" and "I can speak french" because they can be far apart (temporally distant) in given document.
 RNN doesn’t provide provision to forget irrelevant context in between the phrases.  RNN gives more importance to previous hidden state and doesn't have provision given preference to arbitrary (t-k) hidden state, where t is current time step and k is number greater than 0.  Training an RNN on a long sequence of words can cause gradient in back propagation to vanish (when gradient is less than one) or to explode (when gradient is bigger than 1), Since back propagation basically multiplies the gradients along the graph in reverse direction. A detailed explanation of problems with RNN is given [here](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.421.8930&rep=rep1&type=pdf).  
