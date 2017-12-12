@@ -5,7 +5,7 @@ Generative models are powerful and provide insights about the underlying phenome
 
 1. Predict  the probability of a word or character given the previous word or character.
 2. Produce a new song or combine two genre of songs to create an entirely different song, and  synthesize new images from existing images are some examples of generative models. 
-3.Up [sample images](https://arxiv.org/pdf/1703.04244.pdf) and much more.
+3. Up [sample images](https://arxiv.org/pdf/1703.04244.pdf) and much more.
 
 
 In general, Generative Models can be used on any form of data to learn the underlying distribution and produce new data / augment existing data.
