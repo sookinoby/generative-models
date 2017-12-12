@@ -25,18 +25,20 @@ By the end of the notebook, you will be able to:
 ## Generative models- Discriminative models: Martians vs Humans
 Let us take a simple example to understand our dataset better. Let’s say that we have to classify Martians and Humans based on their heights (in centimeters). Below is the sample data set
 
-Martian - 250,260,270,300,220,260,280,290,300,310
-Human - 160,170,180,190,175,140,180,210,140,200
+Martian - 250,260,270,300,220,260,280,290,300,310 <br />
+Human - 160,170,180,190,175,140,180,210,140,200 <br />
 
-If we train a Discriminative Model, it will only learn a decision boundary (at height 200 cm). ![Alt text](images/martians-chart5_preview.jpeg?raw=true "Unrolled RNN"). The model doesn’t care about the underlying distribution that generates the data.
+If we train a Discriminative Model, it will only learn a decision boundary (at height 200 cm). ![Alt text](images/martians-chart5_preview.jpeg?raw=true "Unrolled RNN") <br />
+The model doesn’t care about the underlying distribution that generates the data.
 
-On the other hand, a Generative Model will learn the underlying distribution for Martian (mean =274, std= 8.71) and Human (mean=174, std=7.32).  ). ![Alt text](images/humans_mars.png?raw=true "Unrolled RNN")
+On the other hand, a Generative Model will learn the underlying distribution for Martian (mean =274, std= 8.71) and Human (mean=174, std=7.32).  ![Alt text](images/humans_mars.png?raw=true "Unrolled RNN")<br />
+
 By extending this model, we can generate new Martians and Humans, or a new interbreed species (humars). We can also use this model for classifying Martians and Humans.
 
 ## Limitations of Feed Forward Neural Network
 
 Although Feed Forward Neural Network (including Convolution Neural Network)have shown great accuracy in classifying sentences and text, it cannot store long term dependencies in its memory(hidden state).  For example, whenever we think about KFC chicken, our brain immediately interprets it as ‘hot’ and ‘crispy’. This is because our brains can remember the context of a conversation, and retrieve those contexts whenever it needs. A Feed Forward Neural Network doesn't have the capacity to interpret the context. 
-Any RNN cell will produce two outputs, one is the actual output and the other is the hidden state. If RNN is a person talking on the phone, the actual output is the words spoken and the hidden state is the context in which the person utters the word.  ![Alt text](images/sequene_to_sequence.png?raw=true "Sequence to Sequence model")
+Any RNN cell will produce two outputs, one is the actual output and the other is the hidden state. If RNN is a person talking on the phone, the actual output is the words spoken and the hidden state is the context in which the person utters the word.  ![Alt text](images/sequene_to_sequence.png?raw=true "Sequence to Sequence model") <br />
 The yellow arrows are the hidden state and the red arrows are the output.
  Convolutional Neural Network can only remember spatial information for a small local neighbour(size of convolution kernels) and cannot model sequential data (data with definitive ordering, like structure of a language).  Let's see a simple example to understand long term dependencies.
 
@@ -52,7 +54,7 @@ RNN, Here I come.
 Let’s say we are building a predictive text editor, which helps users auto-complete the current word by using the words in the current document and/or your previous typing habit.  The model should remember long term dependencies like start tag ‘<html>’ and end tag ’</html>’. A Convolutional Neural Network does not have provision to remember long term context/information. A RNN can remember the context using its internal ‘memory’. If RNN is a person, this is how they think “Hey I saw ‘<html>’ tag, then <title> tag, I might need to close the ‘<title>’ tag before closing the ‘<html>’ tag.”
 ## Intuition behind RNN.
 
-Let’s say we have to predict the 4th character given the first 2 characters, to do that we can design a simple neural network as shown below ![Alt text](images/unRolled_rnn.png?raw=true "Unrolled RNN").
+Let’s say we have to predict the 4th character given the first 2 characters, to do that we can design a simple neural network as shown below ![Alt text](images/unRolled_rnn.png?raw=true "Unrolled RNN") <br />
  This is basically a Feed Forward Network where the weights WI(green arrow), WH(yellow arrow) are shared between some of the layers. This is an unrolled version of RNN  and this type of RNN are generally referred as many-to-one RNN, since N inputs (3 characters) are used to predict one character. This can be designed using MxNet as follows:
 
 ```python
@@ -93,14 +95,14 @@ class UnRolledRNN_Model(Block):
 Basically this neural network has 3 embedding layers (emb) for each character, followed by 3 dense layers. They are: dense 1 (shared weight) for inputs,  dense 2 (dense layer) and 1 dense layer (dense 3) that produces the output. We also do some MXNET array addition to combine inputs.
 
 Similar to many-to-one RNN, there are other types of RNN models, including the popular sequence-to-sequence RNN: 
-![Alt text](images/loss.png?raw=true"Sequence to Sequence model").
+![Alt text](images/loss.png?raw=true"Sequence to Sequence model") <br />
 
 Here N inputs (3 characters) are mapped onto 3 outputs, this helps the model to train faster as we “loss” (difference in the prediction and the actual output) at each time instant. Instead of one loss at the end,  we can see loss1, loss2, …. , so each loss can be used to fine tune the network. 
 We use [Binary Cross Entropy Loss](https://mxnet.incubator.apache.org/api/python/gluon/loss.html#mxnet.gluon.loss.SigmoidBinaryCrossEntropyLoss) function in our model.
 
 So that we get a better feedback (backpropagation) when training our model. 
 This model can be folded back and succinctly represented like this: 
- ![Alt text](images/RNN.png?raw=true "RNN").
+ ![Alt text](images/RNN.png?raw=true "RNN") <br />
 
 The above representation also makes the math behind the model easy to understand: 
 
@@ -113,7 +115,7 @@ RNN doesn’t provide the capability to forget irrelevant context in between the
 ## Long short term memory (LSTM)
 In order to address the problems with basic RNN German researchers, Sepp Hochreiter and Juergen Schmidhuber proposed [Long short term memory](http://www.bioinf.jku.at/publications/older/2604.pdf) (LSTM, a complex RNN unit) as a solution to the vanishing / exploding gradient problem.  A beautifully illustrated simpler version of LSTM can be found [here](https://medium.com/mlreview/understanding-lstm-and-its-diagrams-37e2f46f1714). We can see that each unit of LSTM has a small neural network that decides the amount of information it needs to remember (memory) from the previous time step. 
 The diagram below illustrates the LSTM model: 
- ![Alt text](images/lstm.png?raw=true "RNN")
+ ![Alt text](images/lstm.png?raw=true "RNN") <br />
 
 # Preparing your environment
 
@@ -157,7 +159,7 @@ idx = [char_indices[c] for c in text]
 ```
 
 ### Preparing dataset for Un-rolled RNN
- We need to convert the dataset in such a way that the input will be the first three characters, and the output will be the 4th character. Let’s say we have a sentence ‘I_love_mxnet’, this will be converted into the following input ![Alt text](images/unroll_input.png?raw=true "unrolled input").
+ We need to convert the dataset in such a way that the input will be the first three characters, and the output will be the 4th character. Let’s say we have a sentence ‘I_love_mxnet’, this will be converted into the following input ![Alt text](images/unroll_input.png?raw=true "unrolled input") <br />
 
 
  ```python
@@ -195,7 +197,7 @@ def get_batch(source,label_data, i,batch_size=32):
 ### Preparing the dataset for gluon RNN
 
 This is very similar to preparing the dataset for Un-rolled RNN, expect for shape of input. The dataset should be ordered in the shape (number of example X batch_size). For example, let us consider the sample dataset below:
-![Alt text](images/batch_reshape.png?raw=true "batch reshape")
+![Alt text](images/batch_reshape.png?raw=true "batch reshape") <br />
 In the above image, the input sequence is converted to batch of size 3, and then into 2 separate input sequence of length 2. By transforming it this way, it is very easy to generate arbitrary length input sequence, say 5. During our training, we use a input sequence length of 15. This is a hyperparameter and may require fine tuning for best output.
 
 ## Designing RNN in Gluon
@@ -406,7 +408,7 @@ with netD.name_scope():
     netD.add(nn.Conv2D(1, 4, 1, 0))
 ```
 ## Training the GAN network
-The training of a GAN network is not straightforward but it is simple. The below diagram illustrates the training process  ![Alt text](images/GAN_Model.png?raw=true "GAN training").  The real images are given a label one and the fake images are given a label zero
+The training of a GAN network is not straightforward but it is simple. The below diagram illustrates the training process.  ![Alt text](images/GAN_Model.png?raw=true "GAN training") <br />  The real images are given a label one and the fake images are given a label zero
 
 ```python
 #real label is the labels of real image
@@ -460,7 +462,7 @@ errG.backward()
 
 We can use the generator network to create new fake images by providing 100 dimension random input to the network.
 
- ![Alt text](images/GAN_image.png?raw=true "GAN generated images").
+ ![Alt text](images/GAN_image.png?raw=true "GAN generated images")<br />
 ```
 #Let’s generate some random images
 num_image = 8
