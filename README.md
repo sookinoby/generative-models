@@ -1,5 +1,6 @@
 # Generative Models using Apache MXNet
-In our previous notebooks, we used a deep learning technique called Convolution Neural Network (CNN) to classify text and images.  A CNN is generally referred as a Discriminative Model.  A Discriminative Model tries to create a decision boundary to classify a given input signal (data).  
+In our previous notebooks, we used a deep learning technique called Convolution Neural Network (CNN) to classify text and images.  A CNN is generally referred as a Discriminative Model.  A Discriminative Model tries to create a decision boundary to classify a given input signal (data).
+
 Deep learning models, in recent times have been used to generate data based on the given input signal – these are called Generative Models.  A Generative Model tries to understand the underlying distribution, it can also generate new data or classify a given input data.  We have explained the difference between Generative and Discriminative model in the “Generative Models” section below. 
 Generative models are powerful and provide insights about the underlying phenomenon that generates the data, therefore, they can generate data similar to the input data. Generative Models can be used to: 
 1. Predict  the probability of a word or character given the previous word or character.
@@ -52,7 +53,7 @@ RNN, Here I come.
  </html>"
  ```
 Let’s say we are building a predictive text editor, which helps users auto-complete the current word by using the words in the current document and/or your previous typing habit.  The model should remember long term dependencies like start tag ‘<html>’ and end tag ’</html>’. A Convolutional Neural Network does not have provision to remember long term context/information. A RNN can remember the context using its internal ‘memory’. If RNN is a person, this is how they think “Hey I saw ‘<html>’ tag, then <title> tag, I might need to close the ‘<title>’ tag before closing the ‘<html>’ tag.”
-## Intuition behind RNN.
+## Intuition behind RNN
 
 Let’s say we have to predict the 4th character given the first 2 characters, to do that we can design a simple neural network as shown below ![Alt text](images/unRolled_rnn.png?raw=true "Unrolled RNN") <br />
  This is basically a Feed Forward Network where the weights WI(green arrow), WH(yellow arrow) are shared between some of the layers. This is an unrolled version of RNN  and this type of RNN are generally referred as many-to-one RNN, since N inputs (3 characters) are used to predict one character. This can be designed using MxNet as follows:
@@ -101,8 +102,8 @@ Here N inputs (3 characters) are mapped onto 3 outputs, this helps the model to 
 We use [Binary Cross Entropy Loss](https://mxnet.incubator.apache.org/api/python/gluon/loss.html#mxnet.gluon.loss.SigmoidBinaryCrossEntropyLoss) function in our model.
 
 So that we get a better feedback (backpropagation) when training our model. 
-This model can be folded back and succinctly represented like this: 
- ![Alt text](images/RNN.png?raw=true "RNN") <br />
+This model can be folded back and succinctly represented like this:  <br />
+ ![Alt text](images/RNN.png?raw=true "RNN")  <br />
 
 The above representation also makes the math behind the model easy to understand: 
 
@@ -111,7 +112,7 @@ hidden_state_at_t = (WI x input + WH x previous_hidden_state)
 ```
 
 The are some limitations with basic RNN. For example, let us take a document that has 1000 words " I was born in france during world war.... So I can speak french". A simple RNN may not be able to understand the context between "being born in france" and "I can speak french" because they can be far apart (temporally distant) in a given document.
-RNN doesn’t provide the capability to forget irrelevant context in between the phrases. RNN gives more importance to the previous hidden state because it cannot give preference to the arbitrary (t-k) hidden state, where t is the current time step and k is the number greater than 0.  Training an RNN on a long sequence of words can cause gradient in backpropagation to vanish (when gradient is less than one) or to explode (when gradient is larger than 1), as [back propagation[(http://neuralnetworksanddeeplearning.com/chap2.html) basically multiplies the gradients along the computational graph in reverse direction. A detailed explanation of problems with RNN is given [here](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.421.8930&rep=rep1&type=pdf).  
+RNN doesn’t provide the capability to forget irrelevant context in between the phrases. RNN gives more importance to the previous hidden state because it cannot give preference to the arbitrary (t-k) hidden state, where t is the current time step and k is the number greater than 0.  Training an RNN on a long sequence of words can cause gradient in backpropagation to vanish (when gradient is less than one) or to explode (when gradient is larger than 1), as [back propagation](http://neuralnetworksanddeeplearning.com/chap2.html) basically multiplies the gradients along the computational graph in reverse direction. A detailed explanation of problems with RNN is given [here](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.421.8930&rep=rep1&type=pdf).  
 ## Long short term memory (LSTM)
 In order to address the problems with basic RNN German researchers, Sepp Hochreiter and Juergen Schmidhuber proposed [Long short term memory](http://www.bioinf.jku.at/publications/older/2604.pdf) (LSTM, a complex RNN unit) as a solution to the vanishing / exploding gradient problem.  A beautifully illustrated simpler version of LSTM can be found [here](https://medium.com/mlreview/understanding-lstm-and-its-diagrams-37e2f46f1714). We can see that each unit of LSTM has a small neural network that decides the amount of information it needs to remember (memory) from the previous time step. 
 The diagram below illustrates the LSTM model: 
