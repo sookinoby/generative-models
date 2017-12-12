@@ -31,7 +31,7 @@ human - 160,170,180,190,175,140,180,210,140,200
 
 If we train a discriminative model, it will only learn a decision boundary (at height 200 cm). ![Alt text](images/martians-chart5_preview.jpeg?raw=true "Unrolled RNN"). The model doesn’t care about the underlying distribution that generates the data.
 
-On the other hand, a generative model will learn the underlying distribution for martians (mean =274, std= 8.71) and human (mean=174, std=7.32).  ). ![Alt text](images/. humans_mars.png?raw=true "Unrolled RNN")
+On the other hand, a generative model will learn the underlying distribution for martians (mean =274, std= 8.71) and human (mean=174, std=7.32).  ). ![Alt text](images/humans_mars.png?raw=true "Unrolled RNN")
 By extending this model, we can generate new martians and humans, or a new interbreed species(humars). We can also use this model for classifying martians and humans.
 
 
