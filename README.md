@@ -1,13 +1,10 @@
 # Generative Models using Apache MXNet
 In our previous notebooks, we used a deep learning technique called Convolution Neural Network (CNN) to classify text and images.  A CNN is generally referred as a Discriminative Model.  A Discriminative Model tries to create a decision boundary to classify a given input signal (data).  
 Deep learning models, in recent times have been used to generate data based on the given input signal – these are called Generative Models.  A Generative Model tries to understand the underlying distribution, it can also generate new data or classify a given input data.  We have explained the difference between Generative and Discriminative model in the “Generative Models” section below. 
-Generative models are powerful and provide insights about the underlying phenomenon that generates the data, therefore, they can generate data similar to the input data. Generative Models can be used to:
-
+Generative models are powerful and provide insights about the underlying phenomenon that generates the data, therefore, they can generate data similar to the input data. Generative Models can be used to: 
 1. Predict  the probability of a word or character given the previous word or character.
 2. Produce a new song or combine two genre of songs to create an entirely different song, and  synthesize new images from existing images are some examples of generative models. 
 3. Up [sample images](https://arxiv.org/pdf/1703.04244.pdf) and much more.
-
-
 In general, Generative Models can be used on any form of data to learn the underlying distribution and produce new data / augment existing data.
 In this tutorial, we are going to build Generative Models, using Apache MXNet gluon API, that will predict the next character/word. In other words, we are going to build our own version of [swiftkey](https://blog.swiftkey.com/swiftkey-debuts-worlds-first-smartphone-keyboard-powered-by-neural-networks/). 
 Then we will also talk about the following topics: 
@@ -22,10 +19,10 @@ By the end of the notebook, you will be able to:
 4. Install MXNet with Gluon API.
 5. Prepare datasets to train the Neural Network.
 6. Implement a basic RNN using Feed Forward Neural Network
-7. Implement a Generative Model to auto generate text using Gluon API
-8. Implement a Generative Adaptive Neural Network
+6. Implement a Generative Model to auto generate text using Gluon API
+7. Implement a Generative Adaptive Neural Network
 
-# Generative models- Discriminative models: Martians vs Humans
+## Generative models- Discriminative models: Martians vs Humans
 Let us take a simple example to understand our dataset better. Let’s say that we have to classify Martians and Humans based on their heights (in centimeters). Below is the sample data set
 
 Martian - 250,260,270,300,220,260,280,290,300,310
@@ -36,7 +33,7 @@ If we train a Discriminative Model, it will only learn a decision boundary (at h
 On the other hand, a Generative Model will learn the underlying distribution for Martian (mean =274, std= 8.71) and Human (mean=174, std=7.32).  ). ![Alt text](images/humans_mars.png?raw=true "Unrolled RNN")
 By extending this model, we can generate new Martians and Humans, or a new interbreed species (humars). We can also use this model for classifying Martians and Humans.
 
-#Limitations of Feed Forward Neural Network
+## Limitations of Feed Forward Neural Network
 
 Although Feed Forward Neural Network (including Convolution Neural Network)have shown great accuracy in classifying sentences and text, it cannot store long term dependencies in its memory(hidden state).  For example, whenever we think about KFC chicken, our brain immediately interprets it as ‘hot’ and ‘crispy’. This is because our brains can remember the context of a conversation, and retrieve those contexts whenever it needs. A Feed Forward Neural Network doesn't have the capacity to interpret the context. 
 Any RNN cell will produce two outputs, one is the actual output and the other is the hidden state. If RNN is a person talking on the phone, the actual output is the words spoken and the hidden state is the context in which the person utters the word.  ![Alt text](images/sequene_to_sequence.png?raw=true "Sequence to Sequence model")
@@ -53,7 +50,7 @@ RNN, Here I come.
  </html>"
  ```
 Let’s say we are building a predictive text editor, which helps users auto-complete the current word by using the words in the current document and/or your previous typing habit.  The model should remember long term dependencies like start tag ‘<html>’ and end tag ’</html>’. A Convolutional Neural Network does not have provision to remember long term context/information. A RNN can remember the context using its internal ‘memory’. If RNN is a person, this is how they think “Hey I saw ‘<html>’ tag, then <title> tag, I might need to close the ‘<title>’ tag before closing the ‘<html>’ tag.”
-# Intuition behind RNN.
+## Intuition behind RNN.
 
 Let’s say we have to predict the 4th character given the first 2 characters, to do that we can design a simple neural network as shown below ![Alt text](images/unRolled_rnn.png?raw=true "Unrolled RNN").
  This is basically a Feed Forward Network where the weights WI(green arrow), WH(yellow arrow) are shared between some of the layers. This is an unrolled version of RNN  and this type of RNN are generally referred as many-to-one RNN, since N inputs (3 characters) are used to predict one character. This can be designed using MxNet as follows:
@@ -118,7 +115,7 @@ In order to address the problems with basic RNN German researchers, Sepp Hochrei
 The diagram below illustrates the LSTM model: 
  ![Alt text](images/lstm.png?raw=true "RNN")
 
-## Preparing your environment
+# Preparing your environment
 
 If you're working in the AWS Cloud, you can save yourself the installation management by using an [Amazon Machine Image](https://aws.amazon.com/marketplace/pp/B01M0AXXQB#support), pre-configured for deep learning.  If you have done this, then skip steps 1-5 below. 
 
@@ -201,7 +198,7 @@ This is very similar to preparing the dataset for Un-rolled RNN, expect for shap
 ![Alt text](images/batch_reshape.png?raw=true "batch reshape")
 In the above image, the input sequence is converted to batch of size 3, and then into 2 separate input sequence of length 2. By transforming it this way, it is very easy to generate arbitrary length input sequence, say 5. During our training, we use a input sequence length of 15. This is a hyperparameter and may require fine tuning for best output.
 
-### Designing RNN in Gluon
+## Designing RNN in Gluon
 Next, we define a class which allows us to create two types of RNN namely GRU (Gated Recurrent Unit) and LSTM. GRU is a simpler version of LSTM, and also performs as good as LSTM. You can find a comparison study [here](https://arxiv.org/abs/1412.3555). Below is the Python snippet:
 
 ```python
@@ -242,7 +239,7 @@ class GluonRNNModel(gluon.Block):
 The constructor of class creates few neural units that will be used in our forward pass. The forward pass is the method that will be called during our training to generate the  loss associated with the training data.
 The forward pass function in the GluonRNNModel creates an [embedding layer](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.nn.Embedding) for the input character. You can look at our[previous blog post](https://www.oreilly.com/ideas/sentiment-analysis-with-apache-mxnet) for more details on embedding. The output of the embedding layer is  provided as aninput to the RNN ([GRU](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.rnn.GRU) / [LSTM](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.rnn.LSTM) ) layer. The RNN unit returns an output as well as hidden state. The output produced by the RNN is passed to a decoder (dense unit) which predicts the next character in the neural network and also generate the loss. We also have a “begin state” function that initializes the initial hidden state of the model.
 
-### Training the neural network
+## Training the neural network
 
 After defining the network. we have to train the neural network for it to learn the underlying distribution.
 
@@ -273,7 +270,7 @@ def trainGluonRNN(epochs,train_data,seq=seq_length):
 
 At the beginning of each epoch, we initialise the hidden units to zero state. While training each batch, we we detach the hidden unit from computational graph so that we don’t back propagate the gradient beyond the sequence length (15 in our case). If we don’t detach the hidden state, the gradient is passed to the beginning of hidden state (t=0).  We also scale the gradient by multiplying with sequence length and batch size to normalise it. L.backward backpropagates the loss to fine tune the weights. 
 
-### Text generation.
+## Text generation.
 
 After training for 200 epochs, we can generate random text. The following python code generates random text. Here we initialize the hidden state and pass a initial input string. Then we recursively pass the generated output back into the model to make prediction.  
 
@@ -302,7 +299,7 @@ def generate_random_text(model,input_string,seq_length,batch_size,sentence_lengt
 
 ```
 Next we will look into generative models for images and specially GAN (Generative Adversarial network)
-## Generative Adversarial network (GAN)
+# Generative Adversarial network (GAN)
 
 [Generative adversarial network](https://arxiv.org/abs/1406.2661) is a neural network model based on game theory [zero-sum game](https://en.wikipedia.org/wiki/Zero-sum_game). It typically consists of two different neural networks called Discriminator and Generator, where each network tries to outperform the other. Let us consider an example to understand GAN network. 
 ![Alt text](images/GAN_SAMPLE.png?raw=true "Generative Adversarial Network")
@@ -314,7 +311,7 @@ Let start implementing a simple GAN network.
 I encourage you to download [the notebook](https://github.com/sookinoby/generative-models/blob/master/GAN.ipynb).
 You are welcome to adjust the hyperparameters and experiment with different approaches to neural network architecture.
 
-### Preparing the DataSet
+## Preparing the DataSet
 
 We use a library called [brine](https://docs.brine.io/getting_started.html) to download our dataset. Brine has many datasets, so we can choose the dataset that we want to download. To install and download dataset do the following:
 
@@ -359,7 +356,7 @@ img_list = getImageList('brine_datasets/jayleicn/anime-faces/images/',training_f
 ```
 
 
-### Designing the network
+## Designing the network
 We need to design two separate networks i.e. discriminator network and a generator network. Generator takes a random vector of shape (batchsize X N ), where N is an integer,  as input and converts it to a image of shape (batchsize X channels X width X height). It uses [transpose convolutions](http://deeplearning.net/software/theano_versions/dev/tutorial/conv_arithmetic.html#no-zero-padding-unit-strides-transposed) to upscale the input vectors. This is very similar to a decoder unit in an [autoencoder](https://en.wikipedia.org/wiki/Autoencoder) trying to map a lower dimension vector into higher dimensional vector representation. Below is the snippet of a generator network
 
 ```python  
@@ -408,7 +405,7 @@ with netD.name_scope():
     # state size. (ndf) x 4 x 4
     netD.add(nn.Conv2D(1, 4, 1, 0))
 ```
-### Training the GAN network
+## Training the GAN network
 The training of a GAN network is not straightforward but it is simple. The below diagram illustrates the training process  ![Alt text](images/GAN_Model.png?raw=true "GAN training").  The real images are given a label one and the fake images are given a label zero
 
 ```python
@@ -417,7 +414,7 @@ real_label = nd.ones((batch_size,), ctx=ctx)
 #fake labels is label associated with fake image
 fake_label = nd.zeros((batch_size,),ctx=ctx)
 ```
-#### Training the discriminator
+### Training the discriminator
 
  A real image is also passed to the discriminator, to determine if it is real or fake and the loss associated with the prediction is calculated as errD_real.
 
@@ -448,7 +445,7 @@ errD = errD_real + errD_fake
 errD.backward()
 ```
 
-#### Training the generator
+### Training the generator
 
 The random noise vector used in the training of discriminator is used again to generate a fake image. Then we pass the fake image to the discriminator network to obtain the classification output, and loss is calculated. The loss is then used to fine tune the network.
 
@@ -459,7 +456,7 @@ errG = loss(output, real_label)
 errG.backward()
 ```
 
-### Generating new fake images
+## Generating new fake images
 
 We can use the generator network to create new fake images by providing 100 dimension random input to the network.
 
@@ -477,6 +474,6 @@ plt.show()
 ```
 
 
-## Conclusion
+# Conclusion
 Generative models opens new opportunities for deep learning.  We explored some of the popular generative models for text and image. We learnt basics of RNN and how RNN can be constructed using feed forward neural network. We also used RNN to generate text similar to Friedrich Nietzsche using LSTM.
 Then we learnt about GAN models and generated images similar to input data (Anime Characters).
