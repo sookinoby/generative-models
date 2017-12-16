@@ -213,7 +213,7 @@ def get_batch(source,label_data, i,batch_size=32):
 
 ### Preparing the Data Set for gluon RNN
 This is very similar to preparing the dataset for unrolled RNN, except for the shape of the input. The dataset should be ordered in the shape (number of example X batch_size). For example, let us consider the sample dataset below:
-![Alt text](images/batch_reshape.png?raw=true "batch reshape") <br />
+![Alt text](images/batch3.png?raw=true "batch reshape") <br />
 Let try to batch 
 In the above image, the input sequence is converted to batch of size 3. By transforming it this way, we loose the temporal relationship between 'O' and 'V', 'M' and 'T' and but we can train in batches (faster).  It is very easy to generate arbitrary length input sequence. During our training, we use a input sequence length of 15. This is a hyperparameter and may require fine tuning for best output.
 
