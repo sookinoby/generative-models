@@ -25,7 +25,7 @@ By the end of the notebook, you will be able to:
 6. Implement a RNN Model to auto generate text using Gluon API *
 7. Implement a Generative Adversarial Neural Network (GAN) Neural Network
 
-*Note - Although RNN model is used to generate text, it is not actually a 'Generative model' in strict sense.
+*Note - Although RNN model is used to generate text, it is not actually a 'Generative model' in strict sense. Please check [this](https://arxiv.org/pdf/1703.01898.pdf) for details.
 
 First, we will discuss on the idea behind Generative models, followed by limitations of feed forward neural network. Next, we will implementa basic RNN using feed forward neural network provide good insight into working of RNN. Then we design a power RNN with LSTM and GRU layers using MxNet gluon API. Next, we implement GAN which can generate new image from exsiting images. By the end of tutorial, you will be able to implement other cool generative models using Gluon API. We will roughly be following the structure of [this report](https://web.stanford.edu/class/cs224n/reports/2737434.pdf)
 
