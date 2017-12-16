@@ -269,7 +269,6 @@ After defining the network. we have to train the neural network for it to learn 
 
 ```python
 def trainGluonRNN(epochs,train_data,seq=seq_length):
-    best_val = float("Inf")
     for epoch in range(epochs):
         total_L = 0.0
         hidden = model.begin_state(func = mx.nd.zeros, batch_size = batch_size, ctx = context)
@@ -278,7 +277,7 @@ def trainGluonRNN(epochs,train_data,seq=seq_length):
             hidden = detach(hidden)
             with autograd.record():
                 output, hidden = model(data, hidden)
-                L = loss(output, target)
+                L = loss(output, target) # this is total loss associated with seq_length
                 L.backward()
 
             grads = [i.grad(context) for i in model.collect_params().values()]
@@ -288,7 +287,6 @@ def trainGluonRNN(epochs,train_data,seq=seq_length):
 
             trainer.step(batch_size)
             total_L += mx.nd.sum(L).asscalar()
-        model.save_params(rnn_save)
 ```
 
 Each epoch starts by initializing the hidden units to zero. While training each batch, we detach the hidden unit from computational graph so that we don’t backpropagate the gradient beyond the sequence length (15 in our case). If we don’t detach the hidden state, the gradient is passed to the beginning of hidden state (t=0). After detaching, we calculate the loss and use the backward function to back-propagate the loss in order to fine tune the weights. We also normalize the gradient by multiplying it by the sequence length and batch size.
@@ -555,4 +553,4 @@ plt.show()
 
 
 # Conclusion
-Generative models open up new opportunities for deep learning. This article has explored some of the popular generative models for text and image data. We learned the basics of RNN and how RNN can be constructed using a feed forward neural network. We also used LSTM/GRU/Vanilla RNN to generate text similar to Friedrich Nietzsche. Finally, we learned about GAN models and generated images similar to input data (Anime Characters).
+Generative models open up new opportunities for deep learning. This article has explored some of the popular generative models for text and image data. We learned the basics of RNN and how RNN can be constructed using a feed forward neural network. We also used LSTM/GRU/Vanilla RNN to generate text similar to Friedrich Nietzsche. Finally, we learned about GAN models and generated images similar to input data (Anime Characters). 
