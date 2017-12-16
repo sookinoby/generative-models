@@ -14,7 +14,6 @@ We will also talk about the following topics:
 * The building blocks of a Recurrent Neural Network (RNN)
 * Implementing an unrolled version of RNN to understand its relationship with feed forward neural network, then Long short-term memory (LSTM) and Gated Recurrent Uniy(GRU) RNN and followed by Generative Adversarial Neural Network (GAN) using the MXNet Gluon API.
 
-
 You need to have a basic understanding of Recurrent Neural Network(RNN), Activation Units, Gradient Descent, Back Propagation and NumPy to understand this tutorial.
 By the end of the notebook, you will be able to:
 1. Understand Generative Models
@@ -26,7 +25,7 @@ By the end of the notebook, you will be able to:
 6. Implement a Generative Model to auto generate text using Gluon API
 7. Implement a Generative Adversarial Neural Network (GAN) Neural Network
 
-First, we will discuss on the idea behind Generative models, followed by limitations of feed forward neural network. Next, we will implementa basic RNN using feed forward neural network provide good insight into working of RNN. Then we design a power RNN with LSTM and GRU layers using MxNet gluon API. Next, we implement GAN which can generate new image from exsiting images. By the end of tutorial, you will be able to implement other cool generative models using Gluon API.
+First, we will discuss on the idea behind Generative models, followed by limitations of feed forward neural network. Next, we will implementa basic RNN using feed forward neural network provide good insight into working of RNN. Then we design a power RNN with LSTM and GRU layers using MxNet gluon API. Next, we implement GAN which can generate new image from exsiting images. By the end of tutorial, you will be able to implement other cool generative models using Gluon API. We will roughly be following the structure of [this report](https://web.stanford.edu/class/cs224n/reports/2737434.pdf)
 
 ### How Generative Models Go Further Than Discriminative Models
 We can grasp the power of Generative Models through a trivial example. The heights of human beings follow a normal distribution, showing up as a bell-shaped curve on a graph. Martians tend to be much taller than humans (trust me on this) but also follow a normal distribution. So let's measure some humans and Martians and feed their heights into a discriminative model, followed by a generative model. Our sample data set is;
@@ -38,7 +37,7 @@ If we train a Discriminative Model, it will only learn a decision boundary. Let'
 
 In contrast, a generative model will learn the underlying distribution for Martian (mean =274, std= 8.71) and Human (mean=174, std=7.32).  ![Alt text](images/humans_mars.png?raw=true "Unrolled RNN")<br />
 
-By extending this model, we can generate new Martians and Humans, or a new interbreed species (humars). We can also use this model for classifying Martians and Humans, just like the discriminative model.
+By extending this model, we can generate new Martians and Humans, or a new interbreed species (humars). We can also use this model for classifying Martians and Humans, just like the discriminative model. For a concrete understanding of generative vs discriminative models please check [this](https://arxiv.org/pdf/1703.01898.pdf)
 
 ### The Need For Hidden State
 
