@@ -503,7 +503,8 @@ output = netD(data).reshape((-1, 1))
 errD_real = loss(output, real_label)
 ```
 
-In the next step, a random noise random_z is passed to the generator network to produce a random image. This image is then passed to the discriminator to classify it as real (1) or fake(0), thereby producing a loss, errD_fake.
+In the next step, a random noise random_z is passed to the generator network to produce a random image. This image is then passed to the discriminator to classify it as real (1) or fake(0), thereby producing a loss, errD_fake. This errD_fake is high if the discrimnator wrongly classifies the fake image (lablel 0)
+as true image image (lable 1). This errD_fake is  backpropagated to make the discriminator classfiy fake image as fake image (label 0). This helps the discrimnator to improve it skills.
 
  ```python
 #train with fake image, see what the discriminator predicts
@@ -525,7 +526,7 @@ errD.backward()
 
 ### Training the generator
 
-The random noise(random_z) vector used in the training of discriminator is used again to generate a fake image. Then we pass the fake image to the discriminator network to obtain the classification output, and loss is calculated. The loss is then used to fine tune the network.
+The random noise(random_z) vector used in the training of discriminator is used again to generate a fake image. Then we pass the fake image to the discriminator network to obtain the classification output, and loss is calculated. The loss is high if the fake image generated (label = 0) is not similar to the real image (label 1) i.e. The generator is not able to produce a fake image that can fool discriminator to classify it a real image (label =1) .The loss is then used to fine tune the generator network.
 
 ```python
 fake = netG(random_z)
