@@ -12,9 +12,9 @@ In this tutorial, we are going to build Generative Models, using Apache MXNet gl
 We will also talk about the following topics:
 * The difference between generative and discriminative models
 * The building blocks of a Recurrent Neural Network (RNN)
-* Implementing an unrolled version of RNN to understand its relationship with feed forward neural network, then Long short-term memory (LSTM) and Gated Recurrent Uniy(GRU) RNN and followed by Generative Adversarial Neural Network (GAN) using the MXNet Gluon API.
+* Implementing an unrolled version of RNN to understand its relationship with feed forward neural network, then Long short-term memory (LSTM) and Gated Recurrent Unit (GRU) RNN and followed by Generative Adversarial Network (GAN) using the MXNet Gluon API.
 
-You need to have a basic understanding of Recurrent Neural Network(RNN), Activation Units, Gradient Descent, Back Propagation and NumPy to understand this tutorial.
+You need to have a basic understanding of Recurrent Neural Network(RNN), Activation Functions, Gradient Descent, Back Propagation and NumPy to understand this tutorial.
 By the end of the notebook, you will be able to:
 1. Understand Generative Models
 2. Know the limitations of a Feed Forward Neural Network
@@ -23,23 +23,23 @@ By the end of the notebook, you will be able to:
 5. Prepare datasets to train the Neural Network
 6. Implement a basic RNN using Feed Forward Neural Network 
 6. Implement a RNN Model to auto generate text using Gluon API *
-7. Implement a Generative Adversarial Neural Network (GAN) Neural Network
+7. Implement a Generative Adversarial Network (GAN)
 
 *Note - Although RNN model is used to generate text, it is not actually a 'Generative model' in strict sense. Please check [this](https://arxiv.org/pdf/1703.01898.pdf) for details.
 
-First, we will discuss on the idea behind Generative models, followed by limitations of feed forward neural network. Next, we will implementa basic RNN using feed forward neural network provide good insight into working of RNN. Then we design a power RNN with LSTM and GRU layers using MxNet gluon API. Next, we implement GAN which can generate new image from exsiting images. By the end of tutorial, you will be able to implement other cool generative models using Gluon API. We will roughly be following the structure of [this report](https://web.stanford.edu/class/cs224n/reports/2737434.pdf)
+First, we will discuss on the idea behind Generative models, followed by limitations of feed forward neural networks. Next, we will implementa basic RNN using feed forward neural network provide good insight into working of RNN. Then we design a power RNN with LSTM and GRU layers using MxNet gluon API. Next, we implement GAN which can generate new image from exsiting images. By the end of tutorial, you will be able to implement other cool generative models using Gluon API. We will roughly be following the structure of [this report](https://web.stanford.edu/class/cs224n/reports/2737434.pdf)
 
 ### How Generative Models Go Further Than Discriminative Models
 We can grasp the power of Generative Models through a trivial example. The heights of human beings follow a normal distribution, showing up as a bell-shaped curve on a graph. Martians tend to be much taller than humans (trust me on this) but also follow a normal distribution. So let's measure some humans and Martians and feed their heights into a discriminative model, followed by a generative model. Our sample data set is;
 
-Martian - 250,260,270,300,220,260,280,290,300,310 <br />
-Human - 160,170,180,190,175,140,180,210,140,200 <br />
+Martian (height in centimetre) - 250,260,270,300,220,260,280,290,300,310 <br />
+Human (height in centimetre) - 160,170,180,190,175,140,180,210,140,200 <br />
 
-If we train a Discriminative Model, it will only learn a decision boundary. Let's suppose it recognizes that Martians are taller than 200 cm while Humans are shorter. This actually misclassifies one human, but the accuracy is quite good overall. So the discriminative model is useful for classifying new beings of one planet or another that come along, but not for the more powerful applications listed at the beginning of this article. In particular, the model doesn’t care about the underlying distribution of data. ![Alt text](images/martians-chart5_preview.jpeg?raw=true "Unrolled RNN") <br />
+If we train a Discriminative Model, it will only learn a decision boundary. Let's suppose it recognizes that Martians are taller than 200 cm while Humans are shorter. This actually misclassifies one human, but the accuracy is quite good overall. So the discriminative model is useful for classifying new beings of one planet or another that come along, but not for the more powerful applications listed at the beginning of this article. In particular, the model doesn’t care about the underlying distribution of data. ![Alt text](images/martians-chart5_preview2.jpeg?raw=true "Unrolled RNN") <br />
 
-In contrast, a generative model will learn the underlying distribution for Martian (mean =274, std= 8.71) and Human (mean=174, std=7.32).  ![Alt text](images/humans_mars.png?raw=true "Unrolled RNN")<br />
+In contrast, a generative model will learn the underlying distribution for Martian (mean =274, std= 8.71) and Human (mean=174, std=7.32).  ![Alt text](images/humans_mars.png?raw=true "Unrolled RNN")<br />. Suppose we have a normal distribution for Martian (mean =274, std = 8.71) , we can generate new data by generating a random number between 0 to 1 (unifrom distribution) and then querying the normal distribution for Martians to get a value say 275 cm.
 
-By extending this model, we can generate new Martians and Humans, or a new interbreed species (humars). We can also use this model for classifying Martians and Humans, just like the discriminative model. For a concrete understanding of generative vs discriminative models please check [this](https://arxiv.org/pdf/1703.01898.pdf)
+By extending this model, we can generate new Martians and Humans, or a new interbreed species (humars). We have infinite possiblity as we can manipulate the underlying distribution of data.  We can also use this model for classifying Martians and Humans, just like the discriminative model. For a concrete understanding of generative vs discriminative models please check [this](https://arxiv.org/pdf/1703.01898.pdf)
 
 ### The Need For Hidden State
 
@@ -127,7 +127,7 @@ There are some limitations with vanilla RNN. For example, let us take a document
 RNN doesn’t provide the capability (at least in practice) to forget irrelevant context in between the phrases. RNN gives more importance to the most previous hidden state because it cannot give preference to the arbitrary (t-k) hidden state, where t is the current time step and k is the number greater than 0. This is because training an RNN on a long sequence of words can cause the gradient to vanish (when gradient is small) or to explode (when gradient is large) during backpropagation, because [backpropagation](http://neuralnetworksanddeeplearning.com/chap2.html) basically multiplies the gradients along the computational graph in reverse direction. A detailed explanation of problems with RNN is given [here](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.421.8930&rep=rep1&type=pdf).
 
 ### Long short-term memory (LSTM)
-In order to address the problems with vanilla RNN, the two German researchers Sepp Hochreiter and Juergen Schmidhuber proposed [Long short-term memory](http://www.bioinf.jku.at/publications/older/2604.pdf) (LSTM, a complex RNN unit) as a solution to the vanishing/exploding gradient problem.  A beautifully illustrated simpler version of LSTM can be found [here](https://medium.com/mlreview/understanding-lstm-and-its-diagrams-37e2f46f1714). In abstract sense, We can think LSTM unit as a small neural network that decides the amount of information it needs to preserve (memory) from the previous time step.
+In order to address the problems with vanilla RNN, the two German researchers Sepp Hochreiter and Juergen Schmidhuber proposed [Long short-term memory](http://www.bioinf.jku.at/publications/older/2604.pdf) (LSTM, a complex RNN unit) as a solution to the vanishing/exploding gradient problem.  A beautifully illustrated simpler version of LSTM can be found [here](http://colah.github.io/posts/2015-08-Understanding-LSTMs/) and [here](https://medium.com/mlreview/understanding-lstm-and-its-diagrams-37e2f46f1714). In abstract sense, We can think LSTM unit as a small neural network that decides the amount of information it needs to preserve (memory) from the previous time step.
 
 ## Implementing an LSTM
 
@@ -364,7 +364,7 @@ def generate_random_text(model,input_string,seq_length,batch_size,sentence_lengt
 
 If you look at the text generated, we will note the model has learnt open and close quotations(""). It has definite structure and looks similar to 'nietzsche'.
 
-Next we will look into generative models for images and specially GAN (Generative Adversarial network)
+Next we will look into generative models for images and specially GAN
 
 ## Generative Adversarial Network (GAN)
 
