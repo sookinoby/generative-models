@@ -47,7 +47,7 @@ We can grasp the power of Generative Models using a trivial example. The heights
 Martian (height in centimetre) - 250,260,270,300,220,260,280,290,300,310 <br />
 Human (height in centimetre) - 160,170,180,190,175,140,180,210,140,200 <br />
 
-If we train a Discriminative Model, it will only learn a decision boundary. Let's suppose it recognizes that Martians are taller than 200 cm while Humans are shorter. This actually misclassifies one human, but the accuracy is quite good overall. So the discriminative model is useful for classifying new beings of one planet or another that come along, but not for the more powerful applications listed at the beginning of this article. In particular, the model doesn’t care about the underlying distribution of data. ![Alt text](images/martians-chart5_preview2.jpeg?raw=true "Unrolled RNN") <br />
+If we train a Discriminative Model, it will only learn a decision boundary. Let's suppose it recognizes that Martians are taller than 200 cm while Humans are shorter. This actually misclassifies one human, but the accuracy is quite good overall. So the discriminative model is useful for classifying new beings of one planet or another that come along, but not for the more powerful applications listed at the beginning of this article. In particular, the model doesn’t care about the underlying distribution of data. ![Alt text](images/martians-chart5_preview.jpeg?raw=true "Unrolled RNN") <br />
 
 In contrast, a generative model will learn the underlying distribution for Martian (mean =274, std= 8.71) and Human (mean=174, std=7.32).  ![Alt text](images/humans_mars.png?raw=true "Unrolled RNN")<br />. Suppose we have a normal distribution for Martian (mean =274, std = 8.71) , we can generate new data by generating a random number between 0 to 1 (unifrom distribution) and then querying the normal distribution for Martians to get a value say 275 cm.
 
@@ -581,3 +581,5 @@ plt.show()
 # Conclusion
 
 Generative models open up new opportunities for deep learning. This article has explored some of the popular generative models for text and image data. We learned the basics of RNN and how RNN can be constructed using a Feed Forward Neural Network. We also used LSTM/GRU/Vanilla RNN to generate text similar to Friedrich Nietzsche. Finally, we learned about GAN models and generated images similar to input data (Anime Characters). 
+
+Samparkfoundation.org
