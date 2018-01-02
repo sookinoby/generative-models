@@ -291,7 +291,7 @@ class GluonRNNModel(gluon.Block):
 ```
 The constructor of the class creates the neural units that will be used in our forward pass. The constructor accepts the type of RNN layer (LSTM, GRU or Vanilla RNN) to use.  The forward pass is the method that will be called during our training to generate the loss associated with the training data.
 
-The forward pass function starts by creating an [embedding layer](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.nn.Embedding) for the input character. You can look at our [previous blog post](https://www.oreilly.com/ideas/sentiment-analysis-with-apache-mxnet) for more details on embedding. The output of the embedding layer is provided as input to the RNN. The RNN returns an output as well as the hidden state. There is dropout layer to prevent overfitting so that model doesnt memorize the input-output mapping.   The output produced by the RNN is passed to a decoder (dense unit), which predicts the next character in the neural network and also generates the loss during training phase.
+The forward pass function starts by creating an [embedding layer](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.nn.Embedding) for the input character. You can look at our [previous blog post](https://www.oreilly.com/ideas/sentiment-analysis-with-apache-mxnet) for more details on embedding. The output of the embedding layer is provided as input to the RNN. The RNN returns an output as well as the hidden state. There is dropout layer to prevent overfitting so that the model doesn’t memorize the input-output mapping.   The output produced by the RNN is passed to a decoder (dense unit), which predicts the next character in the neural network and also generates the loss during training phase.
 
 We also have a “begin state” function that initializes the initial hidden state of the model.
 
@@ -334,9 +334,7 @@ To generate text, we initialize the hidden state.
 Remember, we don't have to reset the hidden state as we don’t backpropagate the loss (fine tune the weights).
 
 
-Then, we reshape the input sequence to vector the model accepts using Mxnet arrays. Then we 
-reshape the input to the shape the RNN model accepts
-
+Then, we reshape the input sequence to vector the model accepts using Mxnet arrays.
 ```python
  sample_input = mx.nd.array(np.array([idx[0:seq_length]]).T
                                 ,ctx=context)
@@ -467,7 +465,8 @@ This is very similar to how a decoder unit in an [autoencoder](https://en.wikipe
 
 ```python
 
-# Simple generator. You can use any model(VGG, AlexNet and etc.) but should upscale the latent variable(random vectors) to 64 * 64 * 3 channel image with netG.name_scope():
+# Simple generator. You can use mode of your choicel(VGG, AlexNet and etc.) but we should make sure the model upscale the latent variable(random vectors) to 64 * 64 * 3 channel image, the output image we want the generative model to produce.
+With netG.name_scope():
      # input is random_z (batchsize X 150 X 1), going into a tranposed convolution
     netG.add(nn.Conv2DTranspose(ngf * 8, 4, 1, 0))
     netG.add(nn.BatchNorm())
@@ -592,5 +591,3 @@ plt.show()
 # Conclusion
 
 Generative models open up new opportunities for deep learning. This article has explored some of the popular generative models for text and image data. We learned the basics of RNN and how RNN can be constructed using a Feed Forward Neural Network. We also used LSTM/GRU/Vanilla RNN to generate text similar to Friedrich Nietzsche. Finally, we learned about GAN models and generated images similar to input data (Anime Characters). 
-
-
