@@ -4,24 +4,22 @@ In our previous notebooks, we used a deep learning technique called Convolution 
 
 Deep learning models in recent times have been used to create even more powerful and useful models called Generative Models. A Generative Model doesn’t just create a decision boundary but understands the underlying distribution of values..  Using this this insight, a generative model can also generate new data or classify a given input data. Here are some examples of Generative Models:
 
-1. Predicting the probability of a word or character given the previous word or character. Almost all of us have a predictive keyboard on our smartphone, which suggests upcoming words for super-fast typing. Generative models allows us to build the most advanced predictive system similar [SwiftKey](https://blog.swiftkey.com/swiftkey-debuts-worlds-first-smartphone-keyboard-powered-by-neural-networks/).
+1. Predicting the probability of a word or character given the previous word or character. Almost all of us have a predictive keyboard on our smartphone, which suggests upcoming words for super-fast typing. Generative models allows us to build the most advanced predictive system similar to [SwiftKey](https://blog.swiftkey.com/swiftkey-debuts-worlds-first-smartphone-keyboard-powered-by-neural-networks/).
 
 2. Producing a new song or combine two genre of songs to create an entirely different song, and  synthesizing new images from existing images are some examples of Generative Models.
 
-3. [Upgrading images](https://arxiv.org/pdf/1703.04244.pdf) to a higher resolution for removing fuzziness and improving image quality. You can also restore photos.
-
-And much more.
+3. [Upgrading images](https://arxiv.org/pdf/1703.04244.pdf) to a higher resolution for removing fuzziness, improving image quality, restoring photos, and much more.
 
 In general, Generative Models can be used on any form of data to learn the underlying distribution, generate new data, and augment existing data.
 
-In this tutorial, we are going to build Generative Models, using Apache MXNet gluon API, for the first application just listed above: predicting the next alphabetical character in an incoming stream.
+In this tutorial, we are going to build Generative Models, using Apache MXNet gluon API, for the first application just listed above: predicting the next alphabetical character in an incoming stream and then implement generative adversarial network for generating new image from existing images.
 
 We will also talk about the following topics:
 
 * The difference between Generative and Discriminative models
 * The building blocks of a Recurrent Neural Network (RNN)
 * Implementation of an unrolled version of RNN to understand its relationship with Feed Forward Neural Network.
-* Implementation of Long Short-Term Memory (LSTM) and Gated Recurrent Unit (GRU) RNN and followed by Generative Adversarial Network (GAN) using the MXNet Gluon API.
+* Simple example of Generative Adversarial Network (GAN)
 
 You need to have a basic understanding of Recurrent Neural Network(RNN), Activation Functions, Gradient Descent, Back Propagation and NumPy to understand this tutorial.
 
@@ -38,7 +36,7 @@ By the end of the notebook, you will be able to:
 
 *Note - Although RNN model is used to generate text, it is not actually a 'Generative Model' in the strict sense. This [pdf document]((https://arxiv.org/pdf/1703.01898.pdf) clearly illustrates the difference between a  generative model and discriminative model for text classification.
 
-First, we will discuss the idea behind Generative Models and then cover the limitations of Feed Forward Neural Networks. Next, we will implement a basic RNN using Feed Forward Neural Network that can provide good insight into working of RNN. Then we design a powerful RNN with LSTM and GRU layers using MxNet gluon API. Next, we implement a Generative Adversarial Network (GAN) that can generate new images from existing images. By the end of tutorial, you can implement [other cool](https://blog.openai.com/generative-models/) generative Models using Gluon API. We will roughly be following the structure of [this report](https://web.stanford.edu/class/cs224n/reports/2737434.pdf)
+First, we will discuss the idea behind Generative Models and then cover the limitations of Feed Forward Neural Networks. Next, we will implement a basic RNN using Feed Forward Neural Network that can provide a good insight into how RNN works. Then we design a powerful RNN with LSTM and GRU layers using MxNet gluon API. Next, we implement a Generative Adversarial Network (GAN) that can generate new images from existing images. By the end of tutorial, you can implement [other cool](https://blog.openai.com/generative-models/) generative Models using Gluon API. We will roughly be following the structure of [this report](https://web.stanford.edu/class/cs224n/reports/2737434.pdf)
 
 ### How Generative Models Go Further Than Discriminative Models
 
@@ -47,11 +45,24 @@ We can grasp the power of Generative Models using a trivial example. The heights
 Martian (height in centimetre) - 250,260,270,300,220,260,280,290,300,310 <br />
 Human (height in centimetre) - 160,170,180,190,175,140,180,210,140,200 <br />
 
-If we train a Discriminative Model, it will only learn a decision boundary. Let's suppose it recognizes that Martians are taller than 200 cm while Humans are shorter. This actually misclassifies one human, but the accuracy is quite good overall. So the discriminative model is useful for classifying new beings of one planet or another that come along, but not for the more powerful applications listed at the beginning of this article. In particular, the model doesn’t care about the underlying distribution of data. ![Alt text](images/martians-chart5_preview.jpeg?raw=true "Unrolled RNN") <br />
+If we train a Discriminative Model, it will only learn a decision boundary. Let's suppose it recognizes that Martians are taller than 200 cm while Humans are shorter. This actually wrongly classifies one human, but the accuracy is quite good overall. So the discriminative model is useful for classifying new beings of one planet or another that come along, but not for the more powerful applications listed at the beginning of this article. In particular, the model doesn’t care about the underlying distribution of data. ![Alt text](images/martians-chart5_preview.jpeg?raw=true "Unrolled RNN") <br />
 
-In contrast, a generative model will learn the underlying distribution for Martian (mean =274, std= 8.71) and Human (mean=174, std=7.32).  ![Alt text](images/humans_mars.png?raw=true "Unrolled RNN")<br />. Suppose we have a normal distribution for Martian (mean =274, std = 8.71) , we can generate new data by generating a random number between 0 to 1 (unifrom distribution) and then querying the normal distribution for Martians to get a value say 275 cm.
+In contrast, a generative model will learn the underlying distribution for Martian (mean =274, std= 8.71) and Human (mean=174, std=7.32).  ![Alt text](images/humans_mars.png?raw=true "Unrolled RNN")<br />. Suppose we have a normal distribution for Martian (mean =274, std = 8.71) , we can generate new data by generating a random number between 0 to 1 (uniform distribution) and then querying the normal distribution for Martians to get a value say 275 cm.
 
-By extending this model, we can generate new Martians and Humans, or a new interbreed species (humars). We have infinite possiblity as we can manipulate the underlying distribution of data.  We can also use this model for classifying Martians and Humans, just like the discriminative model. For a concrete understanding of generative vs discriminative models please check [this](https://arxiv.org/pdf/1703.01898.pdf)
+By extending this model, we can generate new Martians and Humans, or a new interbreed species (humars). We have infinite possibility as we can manipulate the underlying distribution of data.  We can also use this model for classifying Martians and Humans, just like the discriminative model. For a concrete understanding of generative vs discriminative models please check [this](https://arxiv.org/pdf/1703.01898.pdf).
+
+Examples of Discriminative models - Logistic regression, Support Vector Machine, etc.
+Examples of Generative models -Hidden Markov Model, Naive Bayes Classifier, etc.
+
+### Generative vs Discriminative Models in neural network
+
+Let’s say you want to train two model called “m-dis” and “m-gen-partial” the difference between a dog and a cat. 
+ 
+A “m-dis” will have a softmax layer for regression classifier at the end (final layer) which does binary classification.  All other layers (hidden layer) tries to learn a representation of the input that can classify the input correctly. They hidden layer may* learn rule like : <br />
+If the eyes are blue and has brown strips then it is a cat, ignoring other important features like shape of body, height, etc.
+    
+On the other hand, “m-gen” is trained to learn a lower dimension representation (a distribution) that can represent the input image of cat/dog. The hidden layer can learn about the general features of cat/dog (shape, color, height and etc). Moreover, data set needs no labeling as we are only train to extract features to represent the input data. Then we can adapt the model “‘m-gen-partial’” to classifying data/cat by adding a softmax classifier at the end and training with few labeled examples of cat/dog. We can also generate new data by adding a decoder network to the ‘m-gen-partial’ model. Adding a decoder network is not trivial, and is explained the section GAN model.
+* - In deep neural network, the hidden layers of discriminative model actually learns the general features expect for the last layer which is used in classification.  
 
 ### The Need For Hidden State (memory)
 
@@ -582,4 +593,4 @@ plt.show()
 
 Generative models open up new opportunities for deep learning. This article has explored some of the popular generative models for text and image data. We learned the basics of RNN and how RNN can be constructed using a Feed Forward Neural Network. We also used LSTM/GRU/Vanilla RNN to generate text similar to Friedrich Nietzsche. Finally, we learned about GAN models and generated images similar to input data (Anime Characters). 
 
-Samparkfoundation.org
+
