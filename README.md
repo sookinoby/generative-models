@@ -2,17 +2,17 @@
 
 In our previous notebooks, we used a deep learning technique called Convolution Neural Network (CNN) to classify text and images.  A CNN is an example of a Discriminative Model, which creates a  decision boundary to classify a given input signal (data).
 
-Deep learning models in recent times have been used to create even more powerful and useful models called Generative Models. A Generative Model doesn’t just create a decision boundary but understands the underlying distribution of values..  Using this this insight, a generative model can also generate new data or classify a given input data. Here are some examples of Generative Models:
+Deep learning models in recent times have been used to create even more powerful and useful models called Generative Models. A Generative Model doesn’t just create a decision boundary but understands the underlying distribution of values. Using this insight, a generative model can also generate new data or classify a given input data. Here are some examples of Generative Models:
 
-1. Predicting the probability of a word or character given the previous word or character. Almost all of us have a predictive keyboard on our smartphone, which suggests upcoming words for super-fast typing. Generative models allows us to build the most advanced predictive system similar to [SwiftKey](https://blog.swiftkey.com/swiftkey-debuts-worlds-first-smartphone-keyboard-powered-by-neural-networks/).
+1. Predicting the probability of a word or character given the previous word or character. Almost all of us have a predictive keyboard on our smartphone, which suggests upcoming words for super-fast typing. Generative models allow us to build the most advanced predictive system similar to [SwiftKey](https://blog.swiftkey.com/swiftkey-debuts-worlds-first-smartphone-keyboard-powered-by-neural-networks/).
 
-2. Producing a new song or combine two genre of songs to create an entirely different song, and  synthesizing new images from existing images are some examples of Generative Models.
+2. Producing a new song or combine two genres of songs to create an entirely different song, and synthesizing new images from existing images are some examples of Generative Models.
 
 3. [Upgrading images](https://arxiv.org/pdf/1703.04244.pdf) to a higher resolution for removing fuzziness, improving image quality, restoring photos, and much more.
 
 In general, Generative Models can be used on any form of data to learn the underlying distribution, generate new data, and augment existing data.
 
-In this tutorial, we are going to build Generative Models, using Apache MXNet gluon API, for the first application just listed above: predicting the next alphabetical character in an incoming stream and then implement generative adversarial network for generating new image from existing images.
+In this tutorial, we are going to build Generative Models, using Apache MXNet gluon API, for the first application just listed above: predicting the next alphabetical character in an incoming stream and then implement a generative adversarial network for generating a new image from existing images.
 
 We will also talk about the following topics:
 
@@ -31,47 +31,53 @@ By the end of the notebook, you will be able to:
 4. Install MXNet with Gluon API
 5. Prepare datasets to train the Neural Network
 6. Implement a basic RNN using Feed Forward Neural Network 
-6. Implement a RNN Model to auto generate text using Gluon API *
+6. Implement an RNN Model to auto-generate text using Gluon API *
 7. Implement a Generative Adversarial Network (GAN)
 
 *Note - Although RNN model is used to generate text, it is not actually a 'Generative Model' in the strict sense. This [pdf document]((https://arxiv.org/pdf/1703.01898.pdf) clearly illustrates the difference between a  generative model and discriminative model for text classification.
 
-First, we will discuss the idea behind Generative Models and then cover the limitations of Feed Forward Neural Networks. Next, we will implement a basic RNN using Feed Forward Neural Network that can provide a good insight into how RNN works. Then we design a powerful RNN with LSTM and GRU layers using MxNet gluon API. Next, we implement a Generative Adversarial Network (GAN) that can generate new images from existing images. By the end of tutorial, you can implement [other cool](https://blog.openai.com/generative-models/) generative Models using Gluon API. We will roughly be following the structure of [this report](https://web.stanford.edu/class/cs224n/reports/2737434.pdf)
+First, we will discuss the idea behind Generative Models and then cover the limitations of Feed Forward Neural Networks. Next, we will implement a basic RNN using Feed Forward Neural Network that can provide a good insight into how RNN works. Then we design a powerful RNN with LSTM and GRU layers using MxNet gluon API. Next, we implement a Generative Adversarial Network (GAN) that can generate new images from existing images. By the end of the tutorial, you can implement [other cool](https://blog.openai.com/generative-models/) generative Models using Gluon API. We will roughly be following the structure of [this report](https://web.stanford.edu/class/cs224n/reports/2737434.pdf)
 
 ### How Generative Models Go Further Than Discriminative Models
 
-We can grasp the power of Generative Models using a trivial example. The heights of human beings follow a normal distribution, showing up as a bell-shaped curve on a graph. Martians tend to be much taller than humans (trust me on this) but also follow a normal distribution. So let's measure some humans and Martians and feed their heights into a discriminative model, followed by a generative model. Our sample data set is;
+Let’s understand the power of Generative Models using a trivial example.
+
+The following table depicts the heights of ten humans and Martians.  
 
 Martian (height in centimetre) - 250,260,270,300,220,260,280,290,300,310 <br />
 Human (height in centimetre) - 160,170,180,190,175,140,180,210,140,200 <br />
 
-If we train a Discriminative Model, it will only learn a decision boundary. Let's suppose it recognizes that Martians are taller than 200 cm while Humans are shorter. This actually wrongly classifies one human, but the accuracy is quite good overall. So the discriminative model is useful for classifying new beings of one planet or another that come along, but not for the more powerful applications listed at the beginning of this article. In particular, the model doesn’t care about the underlying distribution of data. ![Alt text](images/martians-chart5_preview.jpeg?raw=true "Unrolled RNN") <br />
 
-In contrast, a generative model will learn the underlying distribution (lower dimension representation) for Martian (mean =274, std= 8.71) and Human (mean=174, std=7.32).  ![Alt text](images/humans_mars.png?raw=true "Unrolled RNN")<br />. Suppose we have a normal distribution for Martian (mean =274, std = 8.71) , we can generate new data by generating a random number between 0 to 1 (uniform distribution) and then querying the normal distribution for Martians to get a value say 275 cm.
+The heights of human beings follow a normal distribution, showing up as a bell-shaped curve on the graph. Martians tend to be much taller than humans but also have a normal distribution. So let's input the heights of humans and Martians into a discriminative and generative model. 
 
-By extending this model, we can generate new Martians and Humans, or a new interbreed species (humars). We have infinite possibility as we can manipulate the underlying distribution of data.  We can also use this model for classifying Martians and Humans, just like the discriminative model. For a concrete understanding of generative vs discriminative models please check [this](https://arxiv.org/pdf/1703.01898.pdf).
+
+If we train a Discriminative Model, it will only learn a decision boundary. Let's say the discriminative model it recognizes that Martians are taller than 200 cm while Humans are shorter. This actually wrongly classifies one human, but the accuracy is quite good overall. So the discriminative model is useful for classifying new beings of one planet or another that come along, but not for the more powerful applications listed at the beginning of this article. In particular, the model doesn’t care about the underlying distribution of data. ![Alt text](images/martians-chart5_preview.jpeg?raw=true "Unrolled RNN") <br />
+
+In contrast, a generative model will learn the underlying distribution (lower dimension representation) for Martian (mean =274, std= 8.71) and Human (mean=174, std=7.32).  ![Alt text](images/humans_mars.png?raw=true "Unrolled RNN")<br />. Suppose we have a normal distribution for Martian (mean =274, std = 8.71), we can generate new data by generating a random number between 0 to 1 (uniform distribution) and then querying the normal distribution for Martians to get a value say 275 cm.
+
+By extending this model, we can generate new Martians and Humans, or a new interbreed species (humars). We have the infinite possibility as we can manipulate the underlying distribution of data.  We can also use this model for classifying Martians and Humans, just like the discriminative model. For a concrete understanding of generative vs discriminative models, please check [this](https://arxiv.org/pdf/1703.01898.pdf).
 
 Examples of Discriminative models - Logistic regression, Support Vector Machine, etc.
 Examples of Generative models -Hidden Markov Model, Naive Bayes Classifier, etc.
 
 ### Generative vs Discriminative Models in neural network
 
-Let’s say you want to train two model called “m-dis” and “m-gen-partial” the difference between a dog and a cat. 
+Let’s say you want to train two models called “m-dis” and “m-gen-partial” to find the difference between a dog and a cat. 
  
-A “m-dis” will have a softmax layer for regression classifier at the end (final layer) which does binary classification.  All other layers (hidden layer) tries to learn a representation of the input that can classify the input correctly. They hidden layer may* learn rule like : <br />
-If the eyes are blue and has brown strips then it is a cat, ignoring other important features like shape of body, height, etc.
+An “m-dis” will have a softmax layer for regression classifier at the end (final layer) which does binary classification.  All other layers (hidden layer) tries to learn a representation of the input that can classify the input correctly. The hidden layer may* learn rule like : <br />
+If the eyes are blue and have brown strips, then it is a cat, ignoring other important features like the shape of the body, height, etc.
     
-On the other hand, “m-gen” is trained to learn a lower dimension representation (a distribution) that can represent the input image of cat/dog. The hidden layer can learn about the general features of cat/dog (shape, color, height and etc). Moreover, data set needs no labeling as we are only train to extract features to represent the input data. Then we can adapt the model “‘m-gen-partial’” to classifying data/cat by adding a softmax classifier at the end and training with few labeled examples of cat/dog. We can also generate new data by adding a decoder network to the ‘m-gen-partial’ model. Adding a decoder network is not trivial, and is explained the section GAN model.
-* - In deep neural network, the hidden layers of discriminative model actually learns the general features expect for the last layer which is used in classification.  
+On the other hand, “m-gen” is trained to learn a lower dimension representation (distribution) that can represent the input image of cat/dog. The hidden layer can learn about the general features of cat/dog (shape, colour, height, etc). Moreover, dataset needs no labelling as we are only trained to extract features to represent the input data. Then we can adapt the model “‘m-gen-partial’” to classifying data/cat by adding a softmax classifier at the end and training with few labelled examples of cat/dog. We can also generate new data by adding a decoder network to the ‘m-gen-partial’ model. Adding a decoder network is not trivial, and is explained the section GAN model.
+* - In a deep neural network, the hidden layers of the discriminative model actually learns the general features except for the last layer which is used in classification.  
 
 ### The Need For Hidden State (memory)
 
-Although Feed Forward Neural Networks, including Convolution Neural Networks, have shown great accuracy in classifying sentences and text, they cannot store long term dependencies in memory (hidden state). For example, whenever an average American thinks about KFC chicken, her brain immediately thinks of it as "hot" and "crispy". This is because our brains can remember the context of a conversation from memory, and retrieve those contexts whenever it needs. A Feed Forward Neural Network doesn't have the capacity to interpret the context. In a CNN can learn temporal context, local group of a neighbors within the size of its convolution kernels. So it cannot model sequential data (data with definitive ordering, like structure of a language). A abstract view of feed forward neural network is show below <br /> ![Alt text](images/ffn_rnn.png?raw=true "Sequence to Sequence model")
+Although Feed Forward Neural Networks, including Convolution Neural Networks, have shown great accuracy in classifying sentences and text, they cannot store long-term dependencies in memory (hidden state). For example, whenever an average American thinks about KFC chicken, her brain immediately thinks of it as "hot" and "crispy". This is because our brains can remember the context of a conversation from memory, and retrieve those contexts whenever it needs. A Feed-Forward Neural Network can’t interpret the context. In a CNN can learn temporal context, a local group of neighbors within the size of its convolution kernels. So it cannot model sequential data (data with definitive ordering, like the structure of a language). An abstract view of feed-forward neural network is shown below <br /> ![Alt text](images/ffn_rnn.png?raw=true "Sequence to Sequence model")
 
 
-An RNN is more versatile. It's cells accept weighted input and produce both weighted output (WO) and weighted hidden state (WH). The hidden state acts like the memory that stores context. If an RNN represents a person talking on the phone, the weighted output is the words spoken and the weighted hidden state is the context in which the person utters the word.  ![Alt text](images/sequene_to_sequence.png?raw=true "Sequence to Sequence model") <br />
+An RNN is more versatile, it's cells accept weighted input and produce both weighted output (WO) and weighted hidden state (WH). The hidden state acts as the memory that stores context. If an RNN represents a person talking on the phone, the weighted output is the words spoken, and the weighted hidden state is the context in which the person utters the word.  ![Alt text](images/sequene_to_sequence.png?raw=true "Sequence to Sequence model") <br />
 
-The yellow arrows are the hidden state and the red arrows are the output.
+The yellow arrows are the hidden state, and the red arrows are the output.
 
 A simple example can help us understand long term dependencies.
 
@@ -84,11 +90,11 @@ RNN, Here I come.
  </head> <body>HTML is amazing, but I should not forget the end tag.</body>
  </html>
  ```
-Let’s say we are building a predictive text editor, which helps users auto-complete the current word by using the words in the current document and perhaps the users' prior typing habits.  The model should remember long term dependencies like the need for the start tag <html> and to matched by an end tag </html>. A CNN does not have provision to remember long term context like that. A RNN can remember the context using its internal "memory," just as a person might think “Hey, I saw an <html> tag, then a <title> tag, so I need to close the <title> tag before closing the <html> tag.”
+Let’s say we are building a predictive text editor, which helps users auto-complete the current word by using the words in the current document and perhaps the users' prior typing habits.  The model should remember long-term dependencies like the need for the start tag <html> and end tag </html>. A CNN does not have provision to remember long term context like these. On the other hand, an RNN can remember the context using its internal "memory," just as a person might think “Hey, I saw an <html> tag, then a <title> tag, so I need to close the <title> tag before closing the <html> tag.”
 
 ### The intuition behind RNNs
 
-Suppose we have to predict the 4th character in a stream of text, given the first 3 characters. To do that, we can design a simple Feed Forward Neural Network as in the following figure. ![Alt text](images/unRolled_rnn.png?raw=true "Unrolled RNN") <br />
+Suppose we have to predict the 4th character in a stream of text, given the first three characters. To do that, we can design a simple Feed Forward Neural Network as in the following figure. ![Alt text](images/unRolled_rnn.png?raw=true "Unrolled RNN") <br />
 
 This is basically a Feed Forward Network where the weights WI (green arrows) and WH (yellow arrows) are shared between some of the layers. This is an unrolled version of [Vanilla RNN](https://towardsdatascience.com/lecture-evolution-from-vanilla-rnn-to-gru-lstms-58688f1da83a), generally referred to as a many-to-one RNN because multiple inputs (3 characters, in this case) are used to predict one character. The RNN can be designed using MxNet as follows:
 
@@ -136,7 +142,7 @@ In addition to the many-to-one RNN, there are other types of RNN that process su
 ![Alt text](images/loss.png?raw=true"Sequence to Sequence model") <br />
 
 
-Here N inputs (3 characters) are mapped onto N outputs. This helps the model to train faster, because we measure loss (the difference between the predicted value and the actual output) at each time instant. Instead of one loss at the end, we can see loss1, loss2, etc.  So that we get a better feedback (backpropagation) when training our model.
+Here N inputs (3 characters) are mapped onto N outputs. This helps the model to train faster because we measure loss (the difference between the predicted value and the actual output) at each time instant. Instead of one loss at the end, we can see loss1, loss2, etc; So that we get a better feedback (backpropagation) when training our model.
 
 We use [Binary Cross Entropy Loss](https://mxnet.incubator.apache.org/api/python/gluon/loss.html#mxnet.gluon.loss.SigmoidBinaryCrossEntropyLoss) in our model.
 
@@ -149,13 +155,13 @@ The above representation also makes the math behind the model easy to understand
 hidden_state_at_t = (WI x input + WH x previous_hidden_state)
 ```
 
-There are some limitations with Vanilla RNN. For example, let’s say we have a long document has the sentences "I was born in France during the world war ….." and "So I can speak French." A Vanilla RNN cannot understand the context between being "born in France" and "I can speak French" if they can be far apart (temporally distant) in a given document.
+There are some limitations with Vanilla RNN. For example, let’s say we have a long document has the sentences "I was born in France during the world war ….." and "So I can speak French." A Vanilla RNN cannot understand the context of being "born in France" and "I can speak French" if they can be far apart (temporally distant) in a given document.
 
-RNN doesn’t provide the capability (at least in practice) to forget the irrelevant context in between the phrases. RNN gives more importance to the most previous hidden state because it cannot give preference to the arbitrary (t-k) hidden state, where t is the current time step and k is the number greater than 0. This is because training an RNN on a long sequence of words can cause the gradient to vanish (when gradient is small) or to explode (when gradient is large) during backpropagation. Basically, [backpropagation](http://neuralnetworksanddeeplearning.com/chap2.html) multiplies the gradients along the computational graph in reverse direction. A detailed explanation of the problems with RNN is explained[here](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.421.8930&rep=rep1&type=pdf).
+RNN doesn’t provide the capability (at least in practice) to forget the irrelevant context in between the phrases. RNN gives more importance to the most previous hidden state because it cannot give preference to the arbitrary (t-k) hidden state, where t is the current time step and k is the number greater than 0. This is because training an RNN on a long sequence of words can cause the gradient to vanish (when the gradient is small) or to explode (when the gradient is large) during backpropagation. Basically, [backpropagation](http://neuralnetworksanddeeplearning.com/chap2.html) multiplies the gradients along the computational graph in reverse direction. A detailed explanation of the problems with RNN is explained[here](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.421.8930&rep=rep1&type=pdf).
 
 ### Long Short-Term Memory (LSTM)
 
-In order to address the problems with Vanilla RNN, the two German researchers Sepp Hochreiter and Juergen Schmidhuber proposed [Long Short-Term Memory](http://www.bioinf.jku.at/publications/older/2604.pdf) (LSTM, a complex RNN unit) as a solution to the vanishing/exploding gradient problem.  A beautifully illustrated simpler version of LSTM can be found [here](http://colah.github.io/posts/2015-08-Understanding-LSTMs/) and [here](https://medium.com/mlreview/understanding-lstm-and-its-diagrams-37e2f46f1714). In abstract sense, we can think LSTM unit as a small neural network that decides the amount of information it needs to preserve (memory) from the previous time step.
+To address the problems with Vanilla RNN, the two German researchers Sepp Hochreiter and Juergen Schmidhuber proposed [Long Short-Term Memory](http://www.bioinf.jku.at/publications/older/2604.pdf) (LSTM, a complex RNN unit) as a solution to the vanishing/exploding gradient problem.  A beautifully illustrated simpler version of LSTM can be found [here](http://colah.github.io/posts/2015-08-Understanding-LSTMs/) and [here](https://medium.com/mlreview/understanding-lstm-and-its-diagrams-37e2f46f1714). In an abstract sense, we can think LSTM unit as a small neural network that decides the amount of information it needs to preserve (memory) from the previous time step.
 
 ## Implementing an LSTM
 
@@ -190,7 +196,8 @@ pip install mxnet==0.12.0
 
 We will use a work of [Friedrich Nietzsche](https://en.wikipedia.org/wiki/Friedrich_Nietzsche) as our dataset.
 You can download the data set [here](https://s3.amazonaws.com/text-datasets/nietzsche.txt). You are free to use any other dataset, such as your own chat history, or you can download some datasets from this [site](https://cs.stanford.edu/people/karpathy/char-rnn/).
-The data set nietzsche.txt consists of 600901 characters, out of which 86 are unique. We need to convert the entire text to a sequence of numbers.
+
+The dataset nietzsche.txt consists of 600901 characters, out of which 86 are unique. We need to convert the entire text to a sequence of numbers.
 
 ```python
 chars = sorted(list(set(text)))
@@ -240,7 +247,7 @@ def get_batch(source,label_data, i,batch_size=32):
     return data, target.reshape((-1,))
 ```
 
-### Preparing the Data Set for gluon RNN
+### Preparing the dataset for gluon RNN
 
 This is very similar to preparing the dataset for unrolled RNN, except for the shape of the input. The dataset should be ordered in the shape (number of example X batch_size). For example, let us consider the sample dataset below and batch it:
 
@@ -250,7 +257,7 @@ In the above image, the input sequence is converted to a batch size of 3. By tra
 
 ### Designing RNN in Gluon
 
-Next, we define a class that allows us to create two RNN models that we have chosen for our example: GRU (Gated Recurrent Unit)](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.rnn.GRU) and [LSTM](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.rnn.LSTM). GRU is a simpler version of LSTM, and performs equally well. You can find a comparison study [here](https://arxiv.org/abs/1412.3555). The models are created with the following Python snippet:
+Next, we define a class that allows us to create two RNN models that we have chosen for our example: GRU (Gated Recurrent Unit)](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.rnn.GRU) and [LSTM](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.rnn.LSTM). GRU is a simpler version of LSTM and performs equally well. You can find a comparison study [here](https://arxiv.org/abs/1412.3555). The models are created with the following Python snippet:
 
 
 ```python
@@ -289,11 +296,11 @@ class GluonRNNModel(gluon.Block):
     def begin_state(self, *args, **kwargs):
         return self.rnn.begin_state(*args, **kwargs)
 ```
-The constructor of the class creates the neural units that will be used in our forward pass. The constructor accepts the type of RNN layer (LSTM, GRU or Vanilla RNN) to use.  The forward pass is the method that will be called during our training to generate the loss associated with the training data.
+The constructor of the class creates the neural units that will be used in our forward pass. The constructor is parameterized by the type of RNN layer (LSTM, GRU or Vanilla RNN) to use.  The forward pass method will be called when training the model to generate the loss associated with the training data.
 
-The forward pass function starts by creating an [embedding layer](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.nn.Embedding) for the input character. You can look at our [previous blog post](https://www.oreilly.com/ideas/sentiment-analysis-with-apache-mxnet) for more details on embedding. The output of the embedding layer is provided as input to the RNN. The RNN returns an output as well as the hidden state. There is dropout layer to prevent overfitting so that the model doesn’t memorize the input-output mapping.   The output produced by the RNN is passed to a decoder (dense unit), which predicts the next character in the neural network and also generates the loss during training phase.
+The forward pass function starts by creating an [embedding layer](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.nn.Embedding) for the input character. You can look at our [previous blog post](https://www.oreilly.com/ideas/sentiment-analysis-with-apache-mxnet) for more details on embedding. The output of the embedding layer is provided as input to the RNN. The RNN returns an output as well as the hidden state. There is dropout layer to prevent overfitting so that the model doesn’t memorize the input-output mapping.   The output produced by the RNN is passed to a decoder (dense unit), which predicts the next character in the neural network and also generates the loss during the training phase.
 
-We also have a “begin state” function that initializes the initial hidden state of the model.
+We also have a “begin state” function that initialises the initial hidden state of the model.
 
 ### Training the neural network
 
@@ -325,7 +332,7 @@ Each epoch starts by initializing the hidden units to zero. While training each 
 
 ### Text generation
 
-After training for 200 epochs, we can generate random text. The weights of trained model is avaliable [here](https://www.dropbox.com/s/7b1fw94s1em5po0/gluonlstm_2?dl=0). You can download the model parammeters and load it using [model.load_params](https://mxnet.incubator.apache.org/api/python/module/module.html?highlight=load#mxnet.module.BaseModule.load_params) function.
+After training for 200 epochs, we can generate random text. The weights of the trained model are available [here](https://www.dropbox.com/s/7b1fw94s1em5po0/gluonlstm_2?dl=0). You can download the model parameters and load it using [model.load_params](https://mxnet.incubator.apache.org/api/python/module/module.html?highlight=load#mxnet.module.BaseModule.load_params) function.
 
 To generate text, we initialize the hidden state.
 ```python
@@ -334,7 +341,7 @@ To generate text, we initialize the hidden state.
 Remember, we don't have to reset the hidden state as we don’t backpropagate the loss (fine tune the weights).
 
 
-Then, we reshape the input sequence to vector the model accepts using Mxnet arrays.
+Then, we reshape the input sequence to a vector the RNN model we create.
 ```python
  sample_input = mx.nd.array(np.array([idx[0:seq_length]]).T
                                 ,ctx=context)
@@ -399,10 +406,10 @@ Next, we will take a look at generative models for images and specially GAN.
 
 [Generative Adversarial Network](https://arxiv.org/abs/1406.2661) is a neural network model based on a [zero-sum game](https://en.wikipedia.org/wiki/Zero-sum_game) from game theory. The application typically consists of two different neural networks called Discriminator and Generator, where each network tries to outperform the other. Let us consider an example to understand GAN network.
 
-Let’s assume that there is a bank (discriminator) that detects whether a given currency is real or fake using machine learning. A fraudster (generator) builds a machine learning model to counterfeit fake currency notes by looking at the real currency notes, and deposits them in bank. The bank tries to identify the currencies deposited as fake.
+Let’s assume that there is a bank (discriminator) that detects whether a given currency is real or fake using machine learning. A fraudster (generator) builds a machine learning model to counterfeit fake currency notes by looking at the real currency notes and deposits them in the bank. The bank tries to identify the currencies deposited as fake.
 ![Alt text](images/GAN_SAMPLE.png?raw=true "Generative Adversarial Network")
 
-If the bank tells the fraudster why it classified these notes as fake,  he can improve his model based on those reasons. After multiple iterations, the bank cannot find the difference between the “real” and “fake” currency. This is the basic idea behind GAN. So now let's implement a simple GAN network.
+If the bank tells the fraudster why it classified these notes as fake,  he can improve his model based on those reasons. After multiple iterations, the bank cannot find the difference between the “real” and “fake” currency. This is the idea behind GAN. So now let's implement a simple GAN network.
 
 I encourage you to download [the notebook](https://github.com/sookinoby/generative-models/blob/master/GAN.ipynb).
 You are welcome to adjust the hyperparameters and experiment with different approaches to neural network architecture.
@@ -414,7 +421,7 @@ We use a library called [Brine](https://docs.brine.io/getting_started.html) to d
 1. pip install brine-io
 2. brine install jayleicn/anime-faces
 
-For this tutorial, I am using the Anime-faces data set, which contains over 100,000 anime images collected from the Internet.
+For this tutorial, I am using the Anime-faces dataset, which contains over 100,000 anime images collected from the Internet.
 
 Once the dataset is downloaded, you can load it using the following code:
 
@@ -459,13 +466,15 @@ img_list = getImageList('brine_datasets/jayleicn/anime-faces/images/',training_f
 
 ### Designing the network
 
-We now need to design the two separate networks, the discriminator and the generator. The generator takes a random vector of shape (batchsize X N ), where N is an integer, and converts it to a image of shape (batch size X channels X width X height). It uses [transpose convolutions](http://deeplearning.net/software/theano_versions/dev/tutorial/conv_arithmetic.html#no-zero-padding-unit-strides-transposed) to upscale the input vectors. 
-This is very similar to how a decoder unit in an [autoencoder](https://en.wikipedia.org/wiki/Autoencoder) maps a lower-dimension vector into a higher-dimensional vector representation. You can choose to design your own generator network, the only the thing you need to be careful about is the input and the output shapes. The input to generator network should be of low dimension (we use 1X150 dimension, latent_z_size) and output should be the expected number of channels (3 , for color images) , width and height (3 x width x height). Here’s the snippet of a generator network.
+We now need to design the two separate networks, the discriminator and the generator. The generator takes a random vector of shape (batchsize X N ), where N is an integer and converts it to an image of shape (batch size X channels X width X height). 
+
+It uses [transpose convolutions](http://deeplearning.net/software/theano_versions/dev/tutorial/conv_arithmetic.html#no-zero-padding-unit-strides-transposed) to upscale the input vectors. 
+This is very similar to how a decoder unit in an [autoencoder](https://en.wikipedia.org/wiki/Autoencoder) maps a lower-dimension vector into a higher-dimensional vector representation. You can choose to design your own generator network, the only the thing you need to be careful about is the input and the output shapes. The input to generator network should be of low dimension (we use 1X150 dimension, latent_z_size) and output should be the expected number of channels (3, for color images), width and height (3 x width x height). Here’s the snippet of a generator network.
 
 
 ```python
 
-# Simple generator. You can use mode of your choicel(VGG, AlexNet and etc.) but we should make sure the model upscale the latent variable(random vectors) to 64 * 64 * 3 channel image, the output image we want the generative model to produce.
+# Simple generator. You can use any model of your choice(VGG, AlexNet, etc.) but ensure that it upscales the latent variable(random vectors) to 64 * 64 * 3 channel image - the output image we want the generative model to produce.
 With netG.name_scope():
      # input is random_z (batchsize X 150 X 1), going into a tranposed convolution
     netG.add(nn.Conv2DTranspose(ngf * 8, 4, 1, 0))
@@ -490,7 +499,7 @@ With netG.name_scope():
     # output size. (nc) x 64 x 64
 ```
 
-Our discriminator is a binary image classification network that maps the image of shape (batch size X channels X width x height) into a lower-dimension vector of shape (batchsize X 1). This is similar to an encoder that converts a higher-dimension image representation into a lower-dimension one. Again, you can use any model that does binary classification with reasonable accuracy. 
+Our discriminator is a binary image classification network that maps the image of shape (batch size X channels X width x height) into a lower-dimension vector of shape (batch size X 1). This is similar to an encoder that converts a higher-dimension image representation into a lower-dimension one. Again, you can use any model that does binary classification with reasonable accuracy. 
 
 Here’s the snippet of the discriminator network:
 
@@ -519,7 +528,7 @@ with netD.name_scope():
 
 The training of a GAN network is not straightforward, but it is simple. The following diagram illustrates the training process.  ![Alt text](images/GAN_Model.png?raw=true "GAN training") <br />
 
-The real images are given a label of 1 and the fake images are given a label of 0.
+The real images are given a label of 1, and the fake images are given a label of 0.
 
 ```python
 #real label is the labels of real image
@@ -538,7 +547,7 @@ output = netD(data).reshape((-1, 1))
 errD_real = loss(output, real_label)
 ```
 
-In the next step, a random noise random_z is passed to the generator network to produce a random image. This image is then passed to the discriminator to classify it as real (1) or fake(0), thereby producing a loss, errD_fake. This errD_fake is high if the discriminator wrongly classifies the fake image (label 0) as true image image (label 1). This errD_fake is  back propagated to train the discriminator to classify the fake image as a fake image (label 0). This helps the discriminator to improve its accuracy.
+In the next step, a random noise random_z is passed to the generator network to produce a random image. This image is then passed to the discriminator to classify it as real (1) or fake(0), thereby creating a loss, errD_fake. This errD_fake is high if the discriminator wrongly classifies the fake image (label 0) as a true image (label 1). This errD_fake is back propagated to train the discriminator to classify the fake image as a fake image (label 0). This helps the discriminator to improve its accuracy.
 
  ```python
 #train with fake image, see what the discriminator predicts
@@ -560,7 +569,7 @@ errD.backward()
 
 ### Training the generator
 
-The random noise(random_z) vector used for training the discriminator is used again to generate a fake image. We then pass the fake image to the discriminator network to obtain the classification output, and the loss is calculated. The loss is high if the fake image generated (label = 0) is not similar to the real image (label 1) i.e. The generator is not able to produce a fake image that can trick the discriminator to classify it as a real image (label =1) .The loss is then used to fine tune the generator network.
+The random noise(random_z) vector used for training the discriminator is used again to generate a fake image. We then pass the fake image to the discriminator network to obtain the classification output, and the loss is calculated. The loss is high if the fake image generated (label = 0) is not similar to the real image (label 1) i.e. The generator is not able to produce a fake image that can trick the discriminator to classify it as a real image (label =1). The loss is then used to fine-tune the generator network.
 
 ```python
 fake = netG(random_z)
@@ -570,8 +579,8 @@ errG.backward()
 ```
 
 ### Generating new fake images
-The model weights are available [here](https://www.dropbox.com/s/uu45cq5y6uigiro/GAN_t2.params?dl=0). You can download the model parammeters and load it using [model.load_params](https://mxnet.incubator.apache.org/api/python/module/module.html?highlight=load#mxnet.module.BaseModule.load_params) function.
-We can use the generator network to create new fake images by providing 150 dimension random input to the network. 
+The model weights are available [here](https://www.dropbox.com/s/uu45cq5y6uigiro/GAN_t2.params?dl=0). You can download the model parameters and load it using [model.load_params](https://mxnet.incubator.apache.org/api/python/module/module.html?highlight=load#mxnet.module.BaseModule.load_params) function.
+We can use the generator network to create new fake images by providing 150 random dimensions as an input to the network. 
 
  ![Alt text](images/GAN_image.png?raw=true "GAN generated images")<br />
 
@@ -590,4 +599,6 @@ plt.show()
 
 # Conclusion
 
-Generative models open up new opportunities for deep learning. This article has explored some of the popular generative models for text and image data. We learned the basics of RNN and how RNN can be constructed using a Feed Forward Neural Network. We also used LSTM/GRU/Vanilla RNN to generate text similar to Friedrich Nietzsche. Finally, we learned about GAN models and generated images similar to input data (Anime Characters). 
+Generative models open up new opportunities for deep learning. This article has explored some of the famous generative models for text and image data. We learned the basics of RNN and how RNN can be constructed using a Feed Forward Neural Network. We also used LSTM/GRU/Vanilla RNN to generate text similar to Friedrich Nietzsche. Finally, we learned about GAN models and generated images identical to the input data (Anime Characters). 
+
+
