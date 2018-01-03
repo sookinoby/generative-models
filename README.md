@@ -48,14 +48,14 @@ Martian (height in centimetre) - 250,260,270,300,220,260,280,290,300,310 <br />
 Human (height in centimetre) - 160,170,180,190,175,140,180,210,140,200 <br />
 
 
-The heights of human beings follow a normal distribution, showing up as a bell-shaped curve on the graph. Martians tend to be much taller than humans but also have a normal distribution. So let's input the heights of humans and Martians into a discriminative and generative model. 
+The heights of human beings follow a normal distribution, showing up as a bell-shaped curve on the graph. Martians tend to be much taller than humans but also have a normal distribution. So let's input the heights of humans and Martians into both Discriminative and Generative models. 
 
 
-If we train a Discriminative Model, it will only learn a decision boundary. Let's say the discriminative model it recognizes that Martians are taller than 200 cm while Humans are shorter. This actually wrongly classifies one human, but the accuracy is quite good overall. So the discriminative model is useful for classifying new beings of one planet or another that come along, but not for the more powerful applications listed at the beginning of this article. In particular, the model doesn’t care about the underlying distribution of data. ![Alt text](images/martians-chart5_preview.jpeg?raw=true "Unrolled RNN") <br />
+If we train a Discriminative Model, it will only plot a decision boundary. The model misclassifies just one human - the accuracy is quite good overall. Basically, the model doesn’t learn about the underlying distribution of data so it is not suitable to build powerful applications listed in the beginning of this article. ![Alt text](images/martians-chart5_preview.jpeg?raw=true "Unrolled RNN") <br />
 
-In contrast, a generative model will learn the underlying distribution (lower dimension representation) for Martian (mean =274, std= 8.71) and Human (mean=174, std=7.32).  ![Alt text](images/humans_mars.png?raw=true "Unrolled RNN")<br />. Suppose we have a normal distribution for Martian (mean =274, std = 8.71), we can generate new data by generating a random number between 0 to 1 (uniform distribution) and then querying the normal distribution for Martians to get a value say 275 cm.
+In contrast, a generative model will learn the underlying distribution (lower dimension representation) for Martian (mean =274, std= 8.71) and Human (mean=174, std=7.32).  ![Alt text](images/humans_mars.png?raw=true "Unrolled RNN")<br />. Suppose we have a normal distribution for Martian (mean =274, std = 8.71), we can produce new data by generating a random number between 0 and 1 (uniform distribution) and then querying the normal distribution of Martians to get a value say 275 cm.
 
-By extending this model, we can generate new Martians and Humans, or a new interbreed species (humars). We have the infinite possibility as we can manipulate the underlying distribution of data.  We can also use this model for classifying Martians and Humans, just like the discriminative model. For a concrete understanding of generative vs discriminative models, please check [this](https://arxiv.org/pdf/1703.01898.pdf).
+Using the underlying distribution, we can generate new Martians and Humans, or a new interbreed species (humars). We have the infinite ways to generate data as we can manipulate the underlying distribution of data.  We can also use this model for classifying Martians and Humans, just like the discriminative model. For a concrete understanding of generative vs discriminative models, please check [this](https://arxiv.org/pdf/1703.01898.pdf).
 
 Examples of Discriminative models - Logistic regression, Support Vector Machine, etc.
 Examples of Generative models -Hidden Markov Model, Naive Bayes Classifier, etc.
@@ -64,10 +64,11 @@ Examples of Generative models -Hidden Markov Model, Naive Bayes Classifier, etc.
 
 Let’s say you want to train two models called “m-dis” and “m-gen-partial” to find the difference between a dog and a cat. 
  
-An “m-dis” will have a softmax layer for regression classifier at the end (final layer) which does binary classification.  All other layers (hidden layer) tries to learn a representation of the input that can classify the input correctly. The hidden layer may* learn rule like : <br />
-If the eyes are blue and have brown strips, then it is a cat, ignoring other important features like the shape of the body, height, etc.
+An “m-dis” will have a [softmax layer](https://mxnet.incubator.apache.org/api/python/gluon.html#mxnet.gluon.loss.SoftmaxCrossEntropyLoss) at the end (final layer), which does binary classification.  All the other layers (hidden layer) try to learn a [representation](http://www.deeplearningbook.org/contents/representation.html) of the input (cat/dog) that can reduce the loss at the final layer. The hidden layer may* learn a rule like : <br />
+If the eyes are blue and have brown strips then it is a cat or it is a dog, ignoring other important features like the shape of the body, height, etc.
     
-On the other hand, “m-gen” is trained to learn a lower dimension representation (distribution) that can represent the input image of cat/dog. The hidden layer can learn about the general features of cat/dog (shape, colour, height, etc). Moreover, dataset needs no labelling as we are only trained to extract features to represent the input data. Then we can adapt the model “‘m-gen-partial’” to classifying data/cat by adding a softmax classifier at the end and training with few labelled examples of cat/dog. We can also generate new data by adding a decoder network to the ‘m-gen-partial’ model. Adding a decoder network is not trivial, and is explained the section GAN model.
+On the other hand, “m-gen-partial” is trained to learn a lower dimension representation (distribution) that can represent the input image of cat/dog. The final layer is not a softmax layer used for classification. The hidden layer can learn about the general features of a cat/dog (shape, colour, height, etc). Moreover, the dataset needs no labelling as we are only training to extract features to represent the input data. Then we can tweak the model “‘m-gen-partial’” to classify a cat/dog by adding a softmax classifier at the end and by training with few labelled examples of cat/dog. We can also generate new data by adding a decoder network to the ‘m-gen-partial’ model. Adding a decoder network is not trivial -- we have explained about this in the “GAN model” section.
+ 
 * - In a deep neural network, the hidden layers of the discriminative model actually learns the general features except for the last layer which is used in classification.  
 
 ### The Need For Hidden State (memory)
@@ -341,7 +342,8 @@ To generate text, we initialize the hidden state.
 Remember, we don't have to reset the hidden state as we don’t backpropagate the loss (fine tune the weights).
 
 
-Then, we reshape the input sequence to a vector the RNN model we create.
+Then, we reshape the input sequence vector to a shape that the RNN model accepts.
+
 ```python
  sample_input = mx.nd.array(np.array([idx[0:seq_length]]).T
                                 ,ctx=context)
